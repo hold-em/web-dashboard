@@ -15,7 +15,9 @@
     "lint:strict": "eslint --max-warnings=0 src",
     "format": "prettier --write .",
     "format:check": "prettier -c -w .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "lint-staged": {
     "**/*.{js,jsx,tsx,ts,css,less,scss,sass}": [
@@ -89,10 +91,19 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "3.2.4",
     "@faker-js/faker": "^9.3.0",
+    "@storybook/addon-essentials": "8.5.2",
+    "@storybook/addon-interactions": "8.5.2",
+    "@storybook/addon-onboarding": "8.5.2",
+    "@storybook/blocks": "8.5.2",
+    "@storybook/nextjs": "8.5.2",
+    "@storybook/react": "8.5.2",
+    "@storybook/test": "8.5.2",
     "@types/sort-by": "^1.2.3",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.11.0",
+    "eslint-plugin-storybook": "^0.11.2",
     "husky": "^9.1.7",
     "lint-staged": "^15.2.11",
     "prettier": "3.4.2",

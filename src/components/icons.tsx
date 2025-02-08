@@ -12,7 +12,6 @@ import {
   HelpCircle,
   Image,
   Laptop,
-  LayoutDashboardIcon,
   Loader2,
   LogIn,
   LucideIcon,
@@ -30,13 +29,25 @@ import {
   UserCircle2Icon,
   UserPen,
   UserX2Icon,
-  X
+  X,
+  House,
+  Building2,
+  Gamepad2,
+  LayoutDashboard,
+  Users,
+  Ticket,
+  Bell
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
-
 export const Icons = {
-  dashboard: LayoutDashboardIcon,
+  house: House,
+  building: Building2,
+  gamepad: Gamepad2,
+  layoutDashboard: LayoutDashboard,
+  users: Users,
+  ticket: Ticket,
+  creditCard: CreditCard,
   logo: Command,
   login: LogIn,
   close: X,
@@ -64,6 +75,7 @@ export const Icons = {
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
+  bell: Bell,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'

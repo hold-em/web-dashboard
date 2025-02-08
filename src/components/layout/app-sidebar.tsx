@@ -27,8 +27,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-  SidebarRail,
-  useSidebar
+  SidebarRail
 } from '@/components/ui/sidebar';
 import { navItems } from '@/constants/data';
 import {
@@ -55,24 +54,11 @@ export const company = {
 export default function AppSidebar() {
   const { data: session } = useSession();
   const pathname = usePathname();
-  const { state, isMobile } = useSidebar();
 
   return (
     <Sidebar collapsible='icon'>
-      <SidebarHeader>
-        <div className='flex gap-2 py-2 text-sidebar-accent-foreground'>
-          <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground'>
-            <company.logo className='size-4' />
-          </div>
-          <div className='grid flex-1 text-left text-sm leading-tight'>
-            <span className='truncate font-semibold'>{company.name}</span>
-            <span className='truncate text-xs'>{company.plan}</span>
-          </div>
-        </div>
-      </SidebarHeader>
       <SidebarContent className='overflow-x-hidden'>
         <SidebarGroup>
-          <SidebarGroupLabel>Overview</SidebarGroupLabel>
           <SidebarMenu>
             {navItems.map((item) => {
               const Icon = item.icon ? Icons[item.icon] : Icons.logo;

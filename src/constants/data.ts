@@ -14,49 +14,71 @@ export type Product = {
 //Info: The following data is used for the sidebar navigation and Cmd K bar.
 export const navItems: NavItem[] = [
   {
-    title: 'Dashboard',
+    title: '대시보드',
     url: '/dashboard/overview',
-    icon: 'dashboard',
+    icon: 'house',
     isActive: false,
-    shortcut: ['d', 'd'],
-    items: [] // Empty array as there are no child items for Dashboard
+    shortcut: ['cmd', '1'],
+    items: []
   },
   {
-    title: 'Product',
-    url: '/dashboard/product',
-    icon: 'product',
-    shortcut: ['p', 'p'],
+    title: '매장 관리',
+    url: '/dashboard/store-management',
+    icon: 'building',
     isActive: false,
-    items: [] // No child items
+    shortcut: ['cmd', '2']
   },
   {
-    title: 'Account',
-    url: '#', // Placeholder as there is no direct link for the parent
-    icon: 'billing',
-    isActive: true,
-
+    title: '게임',
+    url: '/dashboard/game',
+    icon: 'gamepad',
+    isActive: false,
+    shortcut: ['cmd', '3'],
     items: [
       {
-        title: 'Profile',
-        url: '/dashboard/profile',
-        icon: 'userPen',
-        shortcut: ['m', 'm']
+        title: '게임 관리',
+        url: '/dashboard/game-management'
       },
       {
-        title: 'Login',
-        shortcut: ['l', 'l'],
-        url: '/',
-        icon: 'login'
+        title: '스트럭처 관리',
+        url: '/dashboard/structure-management'
+      },
+      {
+        title: '게임 생성',
+        url: '/dashboard/create-game'
       }
     ]
   },
   {
-    title: 'Kanban',
-    url: '/dashboard/kanban',
-    icon: 'kanban',
-    shortcut: ['k', 'k'],
+    title: '테이블 관리',
+    url: '/dashboard/table-management',
+    icon: 'layoutDashboard',
     isActive: false,
-    items: [] // No child items
+    shortcut: ['cmd', '4'],
+    items: []
+  },
+  {
+    title: '고객 관리',
+    url: '/dashboard/customer-management',
+    icon: 'users',
+    isActive: false,
+    shortcut: ['cmd', '5']
+  },
+  {
+    title: '이용권 관리',
+    url: '/dashboard/ticket-management',
+    icon: 'ticket',
+    isActive: false,
+    shortcut: ['cmd', '6'],
+    items: []
+  },
+  {
+    title: '결제 관리',
+    url: '/dashboard/payment-management',
+    icon: 'creditCard',
+    isActive: false,
+    shortcut: ['cmd', '7'],
+    items: []
   }
 ];
 

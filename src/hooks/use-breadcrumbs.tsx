@@ -11,9 +11,9 @@ type BreadcrumbItem = {
 // This allows to add custom title as well
 const routeMapping: Record<string, BreadcrumbItem[]> = {
   '/dashboard': [{ title: 'Dashboard', link: '/dashboard' }],
-  '/dashboard/employee': [
-    { title: 'Dashboard', link: '/dashboard' },
-    { title: 'Employee', link: '/dashboard/employee' }
+  '/dashboard/game': [
+    { title: '대시보드', link: '/dashboard' },
+    { title: '게임 생성', link: '/dashboard/create-game' }
   ],
   '/dashboard/product': [
     { title: 'Dashboard', link: '/dashboard' },
@@ -24,9 +24,10 @@ const routeMapping: Record<string, BreadcrumbItem[]> = {
 
 export function useBreadcrumbs() {
   const pathname = usePathname();
-
+  console.log(pathname);
   const breadcrumbs = useMemo(() => {
     // Check if we have a custom mapping for this exact path
+    console.log(routeMapping[pathname]);
     if (routeMapping[pathname]) {
       return routeMapping[pathname];
     }
