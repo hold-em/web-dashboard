@@ -20,33 +20,33 @@ import {
   FormControl,
   FormMessage
 } from '@/components/ui/form';
-import { PaymentItem } from '@/mocks/payments';
-import { paymentItemSchema, PaymentItemFormData } from '../utils/form-schema';
+import { Product } from '@/mocks/payments';
+import { productSchema, ProductFormData } from '../utils/form-schema';
 import { v4 as uuidv4 } from 'uuid';
 
-interface PaymentItemDialogProps {
-  addPaymentItem: (paymentItem: PaymentItem) => void;
-  updatePaymentItem: (paymentItem: PaymentItem) => void;
-  initialData?: PaymentItem | null;
+interface ProductDialogProps {
+  addProduct: (product: Product) => void;
+  updateProduct: (product: Product) => void;
+  initialData?: Product | null;
   onClose?: () => void;
   open: boolean;
   setOpen: (open: boolean) => void;
 }
 
-export default function PaymentItemDialog({
-  addPaymentItem,
-  updatePaymentItem,
+export default function ProductDialog({
+  addProduct,
+  updateProduct,
   initialData,
   onClose,
   open,
   setOpen
-}: PaymentItemDialogProps) {
+}: ProductDialogProps) {
   const resetValue = {
     name: '',
     price: undefined
   };
-  const form = useForm<PaymentItemFormData>({
-    resolver: zodResolver(paymentItemSchema),
+  const form = useForm<ProductFormData>({
+    resolver: zodResolver(productSchema),
     mode: 'onChange',
     defaultValues: resetValue
   });
@@ -61,15 +61,15 @@ export default function PaymentItemDialog({
     }
   }, [open, initialData, form]);
 
-  const onSubmit = (data: PaymentItemFormData) => {
+  const onSubmit = (data: ProductFormData) => {
     if (initialData) {
-      updatePaymentItem({
+      updateProduct({
         id: initialData.id,
         created_at: initialData.created_at,
         ...data
       });
     } else {
-      addPaymentItem({
+      addProduct({
         id: uuidv4(),
         created_at: new Date().toISOString(),
         ...data

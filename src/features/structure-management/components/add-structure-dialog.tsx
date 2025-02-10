@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -64,11 +63,6 @@ export default function AddStructureDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* {!isEditing && (
-        <DialogTrigger asChild>
-          <Button variant='outline'>스트럭처 추가</Button>
-        </DialogTrigger>
-      )} */}
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
           <DialogTitle>

@@ -21,22 +21,22 @@ import {
   TableRow,
   TablePagination
 } from '@/components/ui/table';
-import { PaymentItem } from '@/mocks/payments';
+import { Product } from '@/mocks/payments';
 import { PAGE_SIZE } from '@/constants/common';
 
-interface PaymentItemListSectionProps {
-  paymentItems: PaymentItem[];
-  selectPaymentItem: (paymentItem: PaymentItem) => void;
+interface ProductListSectionProps {
+  products: Product[];
+  selectProduct: (paymentItem: Product) => void;
 }
 
-export default function PaymentItemListSection({
-  paymentItems,
-  selectPaymentItem
-}: PaymentItemListSectionProps) {
+export default function ProductListSection({
+  products,
+  selectProduct
+}: ProductListSectionProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({ created_at: false });
 
-  const columns = React.useMemo<ColumnDef<PaymentItem>[]>(
+  const columns = React.useMemo<ColumnDef<Product>[]>(
     () => [
       {
         accessorKey: 'name',
@@ -46,7 +46,9 @@ export default function PaymentItemListSection({
       {
         accessorKey: 'price',
         header: '가격',
-        cell: ({ row }) => <div>{row.getValue('price')}</div>
+        cell: ({ row }) => (
+          <div>{Number(row.getValue('price')).toLocaleString()}원</div>
+        )
       },
       {
         accessorKey: 'created_at',
@@ -63,18 +65,18 @@ export default function PaymentItemListSection({
           <Button
             variant='outline'
             size='sm'
-            onClick={() => selectPaymentItem(row.original)}
+            onClick={() => selectProduct(row.original)}
           >
             수정
           </Button>
         )
       }
     ],
-    [selectPaymentItem]
+    [selectProduct]
   );
 
   const table = useReactTable({
-    data: paymentItems,
+    data: products,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

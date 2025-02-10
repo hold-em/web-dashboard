@@ -19,8 +19,6 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -36,7 +34,6 @@ import {
   ChevronRight,
   ChevronsUpDown,
   CreditCard,
-  GalleryVerticalEnd,
   LogOut
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
@@ -44,12 +41,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
 import { Icons } from '../icons';
-
-export const company = {
-  name: 'Acme Inc',
-  logo: GalleryVerticalEnd,
-  plan: 'Enterprise'
-};
 
 export default function AppSidebar() {
   const { data: session } = useSession();

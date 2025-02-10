@@ -31,7 +31,7 @@ import {
   TableRow,
   TablePagination
 } from '@/components/ui/table';
-import { PaymentHistory } from '@/mocks/payments';
+import { PaymentHistory, PaymentHistoryItem } from '@/mocks/payments';
 import { PAGE_SIZE } from '@/constants/common';
 
 const statusItems = [
@@ -42,18 +42,19 @@ const statusItems = [
 
 interface PaymentListProps {
   paymentHistories: PaymentHistory[];
-  selectPaymentHistory: (paymentHistory: PaymentHistory) => void;
+  paymentHistoryItems: PaymentHistoryItem[];
+  selectPaymentHistory: (item: PaymentHistoryItem) => void;
 }
 
 export default function PaymentListSection({
-  paymentHistories,
-  selectPaymentHistory
+  selectPaymentHistory,
+  paymentHistoryItems
 }: PaymentListProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
 
-  const columns = React.useMemo<ColumnDef<PaymentHistory>[]>(
+  const columns = React.useMemo<ColumnDef<PaymentHistoryItem>[]>(
     () => [
       {
         accessorKey: 'user_name',
@@ -63,7 +64,9 @@ export default function PaymentListSection({
       {
         accessorKey: 'price',
         header: '금액',
-        cell: ({ row }) => <div>{row.getValue('price')}</div>
+        cell: ({ row }) => (
+          <div>{Number(row.getValue('price')).toLocaleString()}원</div>
+        )
       },
       {
         accessorKey: 'payment_method',
@@ -99,7 +102,7 @@ export default function PaymentListSection({
   );
 
   const table = useReactTable({
-    data: paymentHistories,
+    data: paymentHistoryItems,
     columns,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -133,13 +136,13 @@ export default function PaymentListSection({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant='outline'>
-                회원유형 <ChevronDown />
+                결제 상태 <ChevronDown />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
               {(() => {
                 const currentStatus = table
-                  .getColumn('payment_method')
+                  .getColumn('status')
                   ?.getFilterValue() as string | undefined;
                 return statusItems.map((item) => {
                   const isChecked =
@@ -150,9 +153,7 @@ export default function PaymentListSection({
                     <DropdownMenuItem
                       key={item.value}
                       onClick={() =>
-                        table
-                          .getColumn('payment_method')
-                          ?.setFilterValue(item.value)
+                        table.getColumn('status')?.setFilterValue(item.value)
                       }
                     >
                       {isChecked && <Check className='mr-2 h-4 w-4' />}

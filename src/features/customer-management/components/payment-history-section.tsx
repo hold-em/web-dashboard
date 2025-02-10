@@ -52,7 +52,7 @@ export default function PaymentHistorySection({
   user
 }: PaymentHistorySectionProps) {
   const histories = mockPaymentHistories.filter(
-    (item) => item.userId === user.id
+    (item) => item.user_id === user.id
   );
 
   const table = useReactTable({

@@ -1,5 +1,5 @@
 export interface Store {
-  id: number | string;
+  id: string;
   name: string;
   phone: string;
   address: string;
@@ -12,7 +12,7 @@ export interface Store {
 
 export const mockStores: Store[] = [
   {
-    id: 1,
+    id: 'e9bfa6fc-e8e6-4364-b4e3-6aa9c1f48825',
     name: '매장A',
     phone: '010-1234-5678',
     address: '경기 수원시 영통구 대학로 56 201호',
@@ -22,7 +22,7 @@ export const mockStores: Store[] = [
     created_at: '2023-01-01'
   },
   {
-    id: 2,
+    id: 'b386d778-40ae-4295-8bec-6f5a8474c9d8',
     name: '매장B',
     phone: '010-1234-5678',
     address: '경기 수원시 영통구 대학로 56 201호',
@@ -32,7 +32,7 @@ export const mockStores: Store[] = [
     created_at: '2023-02-01'
   },
   {
-    id: 3,
+    id: '6fcf19aa-5345-4ff2-b7af-7815ab960c05',
     name: '매장C',
     phone: '010-1234-5678',
     address: '경기 수원시 영통구 대학로 56 201호',
@@ -42,7 +42,7 @@ export const mockStores: Store[] = [
     created_at: '2023-03-01'
   },
   {
-    id: 4,
+    id: '7aedd63c-51a6-4b3b-8f68-b6d8c1c1e46a',
     name: '매장D',
     phone: '010-1234-5678',
     address: '경기 수원시 영통구 대학로 56 201호',

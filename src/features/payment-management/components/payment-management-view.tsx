@@ -1,26 +1,30 @@
 'use client';
 
 import { useState } from 'react';
-import { PaymentHistory, mockPaymentHistories } from '@/mocks/payments';
-import PaymentItemListSection from './payment-item-list-section';
-import {
-  SectionTopToolbar,
-  BackButton,
-  SectionTopButtonArea
-} from '@/components/section';
-import PaymentItemDialog from './payment-item-form-dialog';
-import { Button } from '@/components/ui/button';
-import PaymentListSection from './payment-list-section';
+import { PaymentHistory, Product, PaymentHistoryItem } from '@/mocks/payments';
+import PaymentListSection from './payment-history-list-section';
+import PaymentAdditionSection from './payment-addition-section';
+import { User } from '@/mocks/users';
 
-interface PaymentManagementViewProps {}
+interface PaymentManagementViewProps {
+  products: Product[];
+  paymentHistories: PaymentHistory[];
+  paymentHistoryItems: PaymentHistoryItem[];
+  users: User[];
+  addPaymentHistory: (paymentHistory: PaymentHistory) => void;
+}
 
-export default function PaymentManagementView({}: PaymentManagementViewProps) {
-  const [paymentHistories, setPaymentHistores] =
-    useState<PaymentHistory[]>(mockPaymentHistories);
+export default function PaymentManagementView({
+  products,
+  paymentHistories,
+  paymentHistoryItems,
+  users,
+  addPaymentHistory
+}: PaymentManagementViewProps) {
   const [selectedPaymentHistory, setSelectedPaymentHistory] =
-    useState<PaymentHistory | null>(null);
+    useState<PaymentHistoryItem | null>(null);
 
-  const selectPaymentHistory = (paymentHistory: PaymentHistory) => {
+  const selectPaymentHistory = (paymentHistory: PaymentHistoryItem) => {
     setSelectedPaymentHistory(paymentHistory);
     console.log(`선택됨 : `, paymentHistory);
   };
@@ -29,7 +33,13 @@ export default function PaymentManagementView({}: PaymentManagementViewProps) {
     <>
       <PaymentListSection
         paymentHistories={paymentHistories}
+        paymentHistoryItems={paymentHistoryItems}
         selectPaymentHistory={selectPaymentHistory}
+      />
+      <PaymentAdditionSection
+        products={products}
+        users={users}
+        addPaymentHistory={addPaymentHistory}
       />
     </>
   );

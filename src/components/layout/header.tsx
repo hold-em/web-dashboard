@@ -3,6 +3,7 @@ import { UserNav } from './user-nav';
 import Image from 'next/image';
 import PageTitle from '../page-title';
 import NotificationButton from '../notification-button';
+import StoreSelect from './store-select';
 
 export default function Header() {
   return (
@@ -16,6 +17,7 @@ export default function Header() {
       />
       <PageTitle />
       <div className='ml-auto flex items-center gap-2.5'>
+        <StoreSelect />
         <NotificationButton />
         <UserNav />
       </div>

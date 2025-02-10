@@ -3,19 +3,15 @@
 import * as React from 'react';
 import {
   ColumnDef,
-  ColumnFiltersState,
-  SortingState,
   VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable
 } from '@tanstack/react-table';
 import { Section, SectionContent, SectionTitle } from '@/components/section';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
   TableBody,
@@ -25,75 +21,53 @@ import {
   TableRow,
   TablePagination
 } from '@/components/ui/table';
-import { User } from '@/mocks/users';
 import { PAGE_SIZE } from '@/constants/common';
+import { Ticket } from '@/mocks/tickets';
 
-interface CustomerListViewProps {
-  users: User[];
-  selectUser: (user: User) => void;
-  setCheckedUsers: (checkedUsers: User[]) => void;
+function daysUntil(dateString: string) {
+  const today = new Date();
+  const targetDate = new Date(dateString);
+
+  const diffTime = targetDate.getTime() - today.getTime();
+
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+interface TicketListViewProps {
+  tickets: Ticket[];
+  selectTicket: (ticket: Ticket) => void;
 }
 
 export default function TicketListSection({
-  users,
-  selectUser,
-  setCheckedUsers
-}: CustomerListViewProps) {
-  const [sorting, setSorting] = React.useState<SortingState>([
-    { id: 'created_at', desc: true }
-  ]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
+  tickets,
+  selectTicket
+}: TicketListViewProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({ created_at: false });
-  const [rowSelection, setRowSelection] = React.useState({});
 
-  const columns = React.useMemo<ColumnDef<User>[]>(
+  const columns = React.useMemo<ColumnDef<Ticket>[]>(
     () => [
       {
-        id: 'select',
-        header: ({ table }) => (
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && 'indeterminate')
-            }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
-            aria-label='Select all'
-          />
-        ),
-        cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label='Select row'
-          />
-        ),
-        enableSorting: false,
-        enableHiding: false
-      },
-      {
         accessorKey: 'name',
-        header: '이름',
+        header: '이용권명',
         cell: ({ row }) => <div>{row.getValue('name')}</div>
       },
       {
-        accessorKey: 'phone',
-        header: '전화번호',
-        cell: ({ row }) => <div>{row.getValue('phone')}</div>
+        accessorKey: 'price',
+        header: '가격',
+        cell: ({ row }) => (
+          <div>{Number(row.getValue('price')).toLocaleString()}원</div>
+        )
       },
       {
-        accessorKey: 'email',
-        header: '이메일',
-        cell: ({ row }) => <div>{row.getValue('email')}</div>
+        accessorKey: 'date',
+        header: '유효기간',
+        cell: ({ row }) => <div>{daysUntil(row.getValue('date'))}일</div>
       },
       {
-        accessorKey: 'member_status',
-        header: '회원유형',
-        cell: ({ row }) => <div>{row.getValue('member_status')}</div>
+        accessorKey: 'remaining_count',
+        header: '잔여 개수',
+        cell: ({ row }) => <div>{row.getValue('remaining_count')}</div>
       },
       {
         accessorKey: 'created_at',
@@ -110,32 +84,25 @@ export default function TicketListSection({
           <Button
             variant='outline'
             size='sm'
-            onClick={() => selectUser(row.original)}
+            onClick={() => selectTicket(row.original)}
           >
-            상세정보
+            지급
           </Button>
         )
       }
     ],
-    [selectUser]
+    [selectTicket]
   );
 
   const table = useReactTable({
-    data: users,
+    data: tickets,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection
+      columnVisibility
     },
     initialState: {
       sorting: [{ id: 'created_at', desc: true }],
@@ -144,19 +111,9 @@ export default function TicketListSection({
     }
   });
 
-  const checkedUsers = React.useMemo(() => {
-    return table.getSelectedRowModel().rows.map((row) => row.original);
-  }, [table.getSelectedRowModel().rows]);
-
-  React.useEffect(() => {
-    setCheckedUsers(checkedUsers);
-  }, [checkedUsers]);
-
   return (
     <Section>
-      <SectionTitle>
-        {users.length ? `고객 목록 (${users.length})` : '고객 목록'}
-      </SectionTitle>
+      <SectionTitle>이용권 목록</SectionTitle>
       <SectionContent>
         <div className='rounded-md border'>
           <Table>

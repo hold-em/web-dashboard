@@ -1,7 +1,6 @@
 'use client';
-
 import * as React from 'react';
-import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 
 import {
   Card,
@@ -52,41 +51,40 @@ export function BarGraph() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className='flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6'>
-          <CardTitle>주간 매출 현황</CardTitle>
-          <CardDescription>2025.01.16 ~ 2025.01.16</CardDescription>
+    <Card className='flex h-full flex-col'>
+      <CardHeader className='pb-2'>
+        <div className='flex flex-col gap-1'>
+          <CardTitle className='text-lg font-semibold'>
+            주간 매출 현황
+          </CardTitle>
+          <CardDescription className='text-sm text-muted-foreground'>
+            2025.01.16 ~ 2025.01.22
+          </CardDescription>
         </div>
       </CardHeader>
-      <CardContent className='px-2 sm:px-6 sm:pb-6'>
-        <div className='text-center'>
+      <CardContent className='flex flex-auto flex-col justify-end px-4 sm:px-6 sm:pb-6'>
+        <div className='mb-4 text-center'>
           <strong className='text-2xl'>₩ {total}</strong>
         </div>
-        <ChartContainer
-          config={chartConfig}
-          className='mt-6 aspect-auto h-[200px] w-full'
-        >
+        <ChartContainer config={chartConfig} className='mt-4 h-[220px] w-full'>
           <BarChart
-            accessibilityLayer
             data={chartData}
-            margin={{
-              left: 12,
-              right: 12
-            }}
+            margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
           >
-            <CartesianGrid vertical={false} />
+            <CartesianGrid strokeDasharray='3 3' vertical={false} />
             <XAxis
               dataKey='date'
               tickLine={false}
               axisLine={false}
-              tickMargin={8}
+              tickMargin={10}
               minTickGap={32}
               tickFormatter={(value) => {
                 const date = new Date(value);
                 return date.toLocaleDateString('ko-KR', { weekday: 'short' });
               }}
+              style={{ fontSize: '0.8rem' }}
             />
+            <YAxis hide />
             <ChartTooltip
               content={
                 <ChartTooltipContent
@@ -102,7 +100,12 @@ export function BarGraph() {
                 />
               }
             />
-            <Bar dataKey='price' fill='#000' />
+            <Bar
+              dataKey='price'
+              fill='#1D4A2A'
+              barSize={36}
+              radius={[4, 4, 0, 0]}
+            />
           </BarChart>
         </ChartContainer>
       </CardContent>

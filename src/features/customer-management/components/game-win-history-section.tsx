@@ -47,7 +47,7 @@ export default function GameWinHistorySection({
   user
 }: GameWinHistorySectionProps) {
   const winHistories = mockGameWinHistories.filter(
-    (item) => item.userId === user.id
+    (item) => item.user_id === user.id
   );
 
   const table = useReactTable({

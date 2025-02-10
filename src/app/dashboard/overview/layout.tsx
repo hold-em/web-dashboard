@@ -4,18 +4,14 @@ import React from 'react';
 
 export default function OverViewLayout({
   sales,
-  pie_stats,
-  bar_stats,
-  area_stats
+  bar_stats
 }: {
   sales: React.ReactNode;
-  pie_stats: React.ReactNode;
   bar_stats: React.ReactNode;
-  area_stats: React.ReactNode;
 }) {
   return (
     <PageContainer>
-      <div className='flex flex-1 flex-col space-y-2'>
+      <div className='flex flex-1 flex-col space-y-3'>
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
@@ -52,12 +48,9 @@ export default function OverViewLayout({
             </CardContent>
           </Card>
         </div>
-        <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7'>
-          <div className='col-span-4'>{bar_stats}</div>
-          <div className='col-span-4 md:col-span-3'>
-            {/* sales arallel routes */}
-            {sales}
-          </div>
+        <div className='grid grid-cols-1 items-stretch gap-4 md:grid-cols-2'>
+          <div className='flex h-full min-h-[300px] flex-col'>{bar_stats}</div>
+          <div className='flex h-full min-h-[300px] flex-col'>{sales}</div>
         </div>
         <div>
           <Card>

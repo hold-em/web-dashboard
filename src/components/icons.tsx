@@ -36,7 +36,8 @@ import {
   LayoutDashboard,
   Users,
   Ticket,
-  Bell
+  Bell,
+  Calendar
 } from 'lucide-react';
 
 export type Icon = LucideIcon;
@@ -76,6 +77,7 @@ export const Icons = {
   moon: Moon,
   laptop: Laptop,
   bell: Bell,
+  calendar: Calendar,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'
