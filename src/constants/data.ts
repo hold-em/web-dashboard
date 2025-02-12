@@ -29,25 +29,11 @@ export const navItems: NavItem[] = [
     shortcut: ['cmd', '2']
   },
   {
-    title: '게임',
-    url: '/dashboard/game',
+    title: '게임 관리',
+    url: '/dashboard/game-management',
     icon: 'gamepad',
     isActive: false,
-    shortcut: ['cmd', '3'],
-    items: [
-      {
-        title: '게임 관리',
-        url: '/dashboard/game-management'
-      },
-      {
-        title: '스트럭처 관리',
-        url: '/dashboard/structure-management'
-      },
-      {
-        title: '게임 생성',
-        url: '/dashboard/create-game'
-      }
-    ]
+    shortcut: ['cmd', '3']
   },
   {
     title: '테이블 관리',

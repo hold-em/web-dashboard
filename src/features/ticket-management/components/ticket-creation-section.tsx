@@ -105,7 +105,9 @@ export default function TicketCreationgSection({
                 </FormItem>
               )}
             />
-            <Button type='submit'>생성</Button>
+            <Button type='submit' className='w-full'>
+              생성
+            </Button>
           </form>
         </Form>
       </SectionContent>

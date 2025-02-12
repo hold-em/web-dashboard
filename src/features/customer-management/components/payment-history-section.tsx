@@ -13,9 +13,9 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-  TablePagination
+  TableRow
 } from '@/components/ui/table';
+import TablePagination from '@/components/table-pagination';
 
 const paymentColumns: ColumnDef<PaymentHistory>[] = [
   {

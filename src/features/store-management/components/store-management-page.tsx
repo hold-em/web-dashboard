@@ -5,26 +5,27 @@ import PageContainer from '@/components/layout/page-container';
 import { Store, mockStores } from '@/mocks/stores';
 import StoreListView from './store-list-view';
 import StoreInfoView from './store-info-view';
+import { usePageNavigation } from '@/hooks/user-page-navigation';
 
 export type PageState = 'list' | 'create' | 'read' | 'update';
 
 export default function StoreManagementPage() {
-  const [pageState, setPageState] = useState<PageState>('list');
+  const { page, navigateTo } = usePageNavigation<PageState>('list');
   const [stores, setStores] = useState<Store[]>(mockStores);
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
 
-  const selectStore = (store: Store, pageState: PageState) => {
+  const selectStore = (store: Store, newPage: PageState) => {
     setSelectedStore(store);
-    setPageState(pageState);
+    navigateTo(newPage);
   };
 
   const goBack = () => {
     setSelectedStore(null);
-    setPageState('list');
+    navigateTo('list');
   };
 
-  const moveCreateForm = () => {
-    setPageState('create');
+  const goCreateForm = () => {
+    navigateTo('create');
   };
 
   const createStore = (store: Store) => {
@@ -41,18 +42,18 @@ export default function StoreManagementPage() {
 
   return (
     <PageContainer>
-      {pageState === 'list' && (
+      {page === 'list' && (
         <StoreListView
           stores={stores}
           selectStore={selectStore}
-          moveCreateForm={moveCreateForm}
+          goCreateForm={goCreateForm}
         />
       )}
-      {pageState !== 'list' && (
+      {page !== 'list' && (
         <StoreInfoView
           selectedStore={selectedStore}
           goBack={goBack}
-          pageState={pageState}
+          pageState={page}
           createStore={createStore}
           updateStore={updateStore}
         />

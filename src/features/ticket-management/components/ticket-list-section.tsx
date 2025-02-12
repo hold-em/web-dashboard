@@ -18,9 +18,9 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-  TablePagination
+  TableRow
 } from '@/components/ui/table';
+import TablePagination from '@/components/table-pagination';
 import { PAGE_SIZE } from '@/constants/common';
 import { Ticket } from '@/mocks/tickets';
 
@@ -82,7 +82,7 @@ export default function TicketListSection({
         header: '관리',
         cell: ({ row }) => (
           <Button
-            variant='outline'
+            variant='secondary'
             size='sm'
             onClick={() => selectTicket(row.original)}
           >

@@ -14,12 +14,13 @@ import { SectionTopToolbar, SectionTopButtonArea } from '@/components/section';
 import ProductManagementView from './product-management-view';
 import PaymentManagementView from './payment-management-view';
 import { User, mockUsers } from '@/mocks/users';
+import { usePageNavigation } from '@/hooks/user-page-navigation';
 
 type PageState = 'management' | 'product';
 
 export default function PaymentManagementPage() {
   const users: User[] = [...mockUsers];
-  const [pageState, setPageState] = useState<PageState>('management');
+  const { page, navigateTo } = usePageNavigation<PageState>('management');
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [paymentHistories, setPaymentHistories] =
     useState<PaymentHistory[]>(mockPaymentHistories);
@@ -39,7 +40,11 @@ export default function PaymentManagementPage() {
   );
 
   const goBack = () => {
-    setPageState('management');
+    navigateTo('management');
+  };
+
+  const goProduct = () => {
+    navigateTo('product');
   };
 
   const addPaymentHistory = (paymentHistory: PaymentHistory) => {
@@ -60,15 +65,11 @@ export default function PaymentManagementPage() {
 
   return (
     <PageContainer>
-      {pageState === 'management' && (
+      {page === 'management' && (
         <>
           <SectionTopToolbar>
             <SectionTopButtonArea>
-              <Button
-                onClick={() => {
-                  setPageState('product');
-                }}
-              >
+              <Button variant='outline' onClick={goProduct}>
                 결제 항목 관리
               </Button>
             </SectionTopButtonArea>
@@ -82,7 +83,7 @@ export default function PaymentManagementPage() {
           />
         </>
       )}
-      {pageState === 'product' && (
+      {page === 'product' && (
         <ProductManagementView
           products={products}
           addProduct={addProduct}

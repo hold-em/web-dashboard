@@ -31,9 +31,9 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-  TablePagination
+  TableRow
 } from '@/components/ui/table';
+import TablePagination from '@/components/table-pagination';
 import { User } from '@/mocks/users';
 import { PAGE_SIZE } from '@/constants/common';
 
@@ -123,7 +123,7 @@ export default function CustomerListSection({
         header: '관리',
         cell: ({ row }) => (
           <Button
-            variant='outline'
+            variant='secondary'
             size='sm'
             onClick={() => selectUser(row.original)}
           >
@@ -173,7 +173,7 @@ export default function CustomerListSection({
         {users.length ? `고객 목록 (${users.length})` : '고객 목록'}
       </SectionTitle>
       <SectionContent>
-        <div className='flex items-center justify-between py-4'>
+        <div className='flex items-center justify-between gap-2 py-4'>
           <Input
             placeholder='고객 검색'
             value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
@@ -184,7 +184,7 @@ export default function CustomerListSection({
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant='outline'>
+              <Button variant='outline' className='flex-none'>
                 회원유형 <ChevronDown />
               </Button>
             </DropdownMenuTrigger>

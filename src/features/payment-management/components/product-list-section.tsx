@@ -18,9 +18,9 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-  TablePagination
+  TableRow
 } from '@/components/ui/table';
+import TablePagination from '@/components/table-pagination';
 import { Product } from '@/mocks/payments';
 import { PAGE_SIZE } from '@/constants/common';
 
@@ -63,7 +63,7 @@ export default function ProductListSection({
         header: '관리',
         cell: ({ row }) => (
           <Button
-            variant='outline'
+            variant='secondary'
             size='sm'
             onClick={() => selectProduct(row.original)}
           >

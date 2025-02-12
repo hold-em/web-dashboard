@@ -10,19 +10,19 @@ import { PageState } from './store-management-page';
 interface StoreListViewProps {
   stores: Store[];
   selectStore: (store: Store, pageState: PageState) => void;
-  moveCreateForm: () => void;
+  goCreateForm: () => void;
 }
 
 export default function StoreListView({
   stores,
   selectStore,
-  moveCreateForm
+  goCreateForm
 }: StoreListViewProps) {
   return (
     <>
       <SectionTopToolbar>
         <SectionTopButtonArea>
-          <Button variant='secondary' onClick={moveCreateForm}>
+          <Button variant='outline' onClick={goCreateForm}>
             매장 추가
           </Button>
         </SectionTopButtonArea>

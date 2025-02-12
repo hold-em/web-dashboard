@@ -11,7 +11,6 @@ import {
   useReactTable
 } from '@tanstack/react-table';
 import { Section, SectionContent, SectionTitle } from '@/components/section';
-import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -21,38 +20,32 @@ import {
   TableRow
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
-import { Store } from '@/mocks/stores';
 import { PAGE_SIZE } from '@/constants/common';
-import { PageState } from './store-management-page';
+import { GameTable } from '@/mocks/tables';
 
-interface StoreListSectionProps {
-  stores: Store[];
-  selectStore: (store: Store, pageState: PageState) => void;
+interface TableStatusSectionProps {
+  tables: GameTable[];
 }
 
-export default function StoreListSection({
-  stores,
-  selectStore
-}: StoreListSectionProps) {
+export default function TableStatusSection({
+  tables
+}: TableStatusSectionProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({ created_at: false });
 
-  const columns = React.useMemo<ColumnDef<Store>[]>(
+  const columns = React.useMemo<ColumnDef<GameTable>[]>(
     () => [
       {
         accessorKey: 'name',
-        header: '매장명',
+        header: '테이블명',
         cell: ({ row }) => <div>{row.getValue('name')}</div>
       },
       {
-        accessorKey: 'phone',
-        header: '전화번호',
-        cell: ({ row }) => <div>{row.getValue('phone')}</div>
-      },
-      {
-        accessorKey: 'address',
-        header: '주소',
-        cell: ({ row }) => <div>{row.getValue('address')}</div>
+        accessorKey: 'player_ids',
+        header: '플레이어 수',
+        cell: ({ row }) => (
+          <div>{(row.getValue('player_ids') as string[]).length}</div>
+        )
       },
       {
         accessorKey: 'status',
@@ -60,46 +53,18 @@ export default function StoreListSection({
         cell: ({ row }) => <div>{row.getValue('status')}</div>
       },
       {
-        accessorKey: 'league',
-        header: '리그',
-        cell: ({ row }) => <div>{row.getValue('league')}</div>
-      },
-      {
         accessorKey: 'created_at',
         header: '생성일',
         cell: ({ row }) =>
           new Date(row.getValue('created_at')).toLocaleString(),
         enableHiding: true
-      },
-      {
-        id: 'actions',
-        enableHiding: false,
-        header: '관리',
-        cell: ({ row }) => (
-          <div className='flex gap-1'>
-            <Button
-              variant='secondary'
-              size='sm'
-              onClick={() => selectStore(row.original, 'read')}
-            >
-              상세정보
-            </Button>
-            <Button
-              variant='secondary'
-              size='sm'
-              onClick={() => selectStore(row.original, 'update')}
-            >
-              수정
-            </Button>
-          </div>
-        )
       }
     ],
-    [selectStore]
+    []
   );
 
   const table = useReactTable({
-    data: stores,
+    data: tables,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -116,8 +81,8 @@ export default function StoreListSection({
   });
 
   return (
-    <Section className='w-full'>
-      <SectionTitle>매장 목록</SectionTitle>
+    <Section>
+      <SectionTitle>테이블 현황</SectionTitle>
       <SectionContent>
         <div className='rounded-md border'>
           <Table>

@@ -43,6 +43,7 @@ export default function ProductManagementView({
         <BackButton onClick={goBack}>결제 목록</BackButton>
         <SectionTopButtonArea>
           <Button
+            variant='outline'
             onClick={() => {
               setOpen(true);
               setSelectedProduct(null);

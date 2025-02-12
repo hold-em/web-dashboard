@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -12,30 +12,33 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Form,
   FormField,
   FormItem,
+  FormLabel,
   FormControl,
   FormMessage
 } from '@/components/ui/form';
+import { Structure } from '@/mocks/games';
 import { structureSchema, StructureFormData } from '../utils/form-schema';
+import { v4 as uuid } from 'uuid';
 
-interface AddStructureDialogProps {
-  onAddStructure: (data: StructureFormData) => void;
-  initialData?: StructureFormData | null;
-  isEditing?: boolean;
-  onClose?: () => void;
+interface StructureFormDialogProps {
+  initialData?: Structure | null;
+  addStructure: (structure: Structure) => void;
+  updateStructure: (structure: Structure) => void;
+  open: boolean;
+  setOpen: (open: boolean) => void;
 }
 
-export default function AddStructureDialog({
-  onAddStructure,
+export default function StructureFormDialog({
   initialData,
-  isEditing = false,
-  onClose
-}: AddStructureDialogProps) {
-  const [open, setOpen] = useState(false);
+  addStructure,
+  updateStructure,
+  open,
+  setOpen
+}: StructureFormDialogProps) {
   const form = useForm<StructureFormData>({
     resolver: zodResolver(structureSchema),
     mode: 'onChange',
@@ -48,17 +51,50 @@ export default function AddStructureDialog({
   });
 
   useEffect(() => {
-    if (initialData) {
-      form.reset(initialData);
-      setOpen(true);
-    }
+    form.reset(
+      initialData || {
+        name: '',
+        level: '',
+        ante: '',
+        duration: ''
+      }
+    );
   }, [initialData, form]);
 
+  useEffect(() => {
+    if (!open) {
+      form.reset({
+        name: '',
+        level: '',
+        ante: '',
+        duration: ''
+      });
+    }
+  }, [open]);
+
   const onSubmit = (data: StructureFormData) => {
-    onAddStructure(data);
+    const { name, level, ante, duration } = data;
+    if (initialData) {
+      updateStructure({
+        ...initialData,
+        name,
+        level,
+        ante,
+        duration
+      });
+    } else {
+      const newStructure: Structure = {
+        id: uuid(),
+        created_at: new Date().toISOString(),
+        name,
+        level,
+        ante,
+        duration
+      };
+      addStructure(newStructure);
+    }
     setOpen(false);
     form.reset();
-    if (onClose) onClose();
   };
 
   return (
@@ -66,17 +102,17 @@ export default function AddStructureDialog({
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
           <DialogTitle>
-            {isEditing ? '스트럭처 수정' : '새 스트럭처 추가'}
+            {initialData ? '스트럭처 수정' : '새 스트럭처 추가'}
           </DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name='name'
               render={({ field }) => (
                 <FormItem>
-                  <Label htmlFor='name'>이름</Label>
+                  <FormLabel htmlFor='name'>이름</FormLabel>
                   <FormControl>
                     <Input id='name' placeholder='이름 입력' {...field} />
                   </FormControl>
@@ -89,7 +125,7 @@ export default function AddStructureDialog({
               name='level'
               render={({ field }) => (
                 <FormItem>
-                  <Label htmlFor='level'>레벨</Label>
+                  <FormLabel htmlFor='level'>레벨</FormLabel>
                   <FormControl>
                     <Input id='level' placeholder='레벨 입력' {...field} />
                   </FormControl>
@@ -102,7 +138,7 @@ export default function AddStructureDialog({
               name='ante'
               render={({ field }) => (
                 <FormItem>
-                  <Label htmlFor='ante'>앤티</Label>
+                  <FormLabel htmlFor='ante'>앤티</FormLabel>
                   <FormControl>
                     <Input id='ante' placeholder='앤티 입력' {...field} />
                   </FormControl>
@@ -115,7 +151,7 @@ export default function AddStructureDialog({
               name='duration'
               render={({ field }) => (
                 <FormItem>
-                  <Label htmlFor='duration'>듀레이션</Label>
+                  <FormLabel htmlFor='duration'>듀레이션</FormLabel>
                   <FormControl>
                     <Input
                       id='duration'
@@ -128,7 +164,7 @@ export default function AddStructureDialog({
               )}
             />
             <DialogFooter>
-              <Button type='submit'>{isEditing ? '수정' : '추가'}</Button>
+              <Button type='submit'>{initialData ? '수정' : '추가'}</Button>
             </DialogFooter>
           </form>
         </Form>

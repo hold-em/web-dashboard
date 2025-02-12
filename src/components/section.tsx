@@ -38,7 +38,11 @@ const SectionContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn('mt-8 space-y-4', className)} {...props} />
+  <div
+    ref={ref}
+    className={cn('mt-8 w-full space-y-4', className)}
+    {...props}
+  />
 ));
 SectionContent.displayName = 'SectionContent';
 

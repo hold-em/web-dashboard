@@ -198,7 +198,9 @@ export default function PaymentAdditionSection({
                 </FormItem>
               )}
             />
-            <Button type='submit'>결제 추가</Button>
+            <Button type='submit' className='w-full'>
+              결제 추가
+            </Button>
           </form>
         </Form>
       </SectionContent>

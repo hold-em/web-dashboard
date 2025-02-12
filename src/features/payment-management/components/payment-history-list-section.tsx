@@ -28,9 +28,9 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-  TablePagination
+  TableRow
 } from '@/components/ui/table';
+import TablePagination from '@/components/table-pagination';
 import { PaymentHistory, PaymentHistoryItem } from '@/mocks/payments';
 import { PAGE_SIZE } from '@/constants/common';
 
@@ -89,7 +89,7 @@ export default function PaymentListSection({
         header: '관리',
         cell: ({ row }) => (
           <Button
-            variant='outline'
+            variant='secondary'
             size='sm'
             onClick={() => selectPaymentHistory(row.original)}
           >
@@ -122,7 +122,7 @@ export default function PaymentListSection({
     <Section>
       <SectionTitle>결제 목록</SectionTitle>
       <SectionContent>
-        <div className='flex items-center justify-between py-4'>
+        <div className='flex items-center justify-between gap-2 py-4'>
           <Input
             placeholder='고객 검색'
             value={
@@ -135,7 +135,7 @@ export default function PaymentListSection({
           />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant='outline'>
+              <Button variant='outline' className='flex-none'>
                 결제 상태 <ChevronDown />
               </Button>
             </DropdownMenuTrigger>

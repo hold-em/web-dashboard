@@ -11,16 +11,16 @@ import { Button } from '@/components/ui/button';
 
 interface DeleteConfirmDialogProps {
   isOpen: boolean;
+  itemName: string;
   onClose: () => void;
   onConfirm: () => void;
-  itemName: string;
 }
 
 export default function DeleteConfirmDialog({
   isOpen,
+  itemName,
   onClose,
-  onConfirm,
-  itemName
+  onConfirm
 }: DeleteConfirmDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -29,7 +29,7 @@ export default function DeleteConfirmDialog({
           <DialogTitle>삭제 확인</DialogTitle>
         </DialogHeader>
         <p className='mt-5'>
-          <strong>{itemName}</strong> 스트럭처를 삭제하시겠습니까?
+          <strong>{itemName}</strong>를 삭제하시겠습니까?
         </p>
         <DialogFooter className='flex justify-end space-x-2'>
           <Button variant='outline' onClick={onClose}>

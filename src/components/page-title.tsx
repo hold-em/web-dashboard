@@ -23,7 +23,7 @@ export default function PageTitle() {
 
   if (!title) return null;
   return (
-    <h2 className={cn('text-3xl font-bold tracking-tight')}>
+    <h2 className={cn('text-lg font-bold tracking-tight')}>
       {getActiveTitle(pathname)}
     </h2>
   );

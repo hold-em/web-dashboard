@@ -21,48 +21,42 @@ import {
   TableRow
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
-import { Store } from '@/mocks/stores';
 import { PAGE_SIZE } from '@/constants/common';
-import { PageState } from './store-management-page';
+import { Structure } from '@/mocks/games';
 
-interface StoreListSectionProps {
-  stores: Store[];
-  selectStore: (store: Store, pageState: PageState) => void;
+interface StructureListSectionProps {
+  structures: Structure[];
+  selectStructure: (structure: Structure) => void;
 }
 
-export default function StoreListSection({
-  stores,
-  selectStore
-}: StoreListSectionProps) {
+export default function StructureListSection({
+  structures,
+  selectStructure
+}: StructureListSectionProps) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({ created_at: false });
 
-  const columns = React.useMemo<ColumnDef<Store>[]>(
+  const columns = React.useMemo<ColumnDef<Structure>[]>(
     () => [
       {
         accessorKey: 'name',
-        header: '매장명',
+        header: '이름',
         cell: ({ row }) => <div>{row.getValue('name')}</div>
       },
       {
-        accessorKey: 'phone',
-        header: '전화번호',
-        cell: ({ row }) => <div>{row.getValue('phone')}</div>
+        accessorKey: 'level',
+        header: '레벨',
+        cell: ({ row }) => <div>{row.getValue('level')}</div>
       },
       {
-        accessorKey: 'address',
-        header: '주소',
-        cell: ({ row }) => <div>{row.getValue('address')}</div>
+        accessorKey: 'ante',
+        header: '엔티',
+        cell: ({ row }) => <div>{row.getValue('ante')}</div>
       },
       {
-        accessorKey: 'status',
-        header: '상태',
-        cell: ({ row }) => <div>{row.getValue('status')}</div>
-      },
-      {
-        accessorKey: 'league',
-        header: '리그',
-        cell: ({ row }) => <div>{row.getValue('league')}</div>
+        accessorKey: 'duration',
+        header: '듀레이션',
+        cell: ({ row }) => <div>{row.getValue('duration')}</div>
       },
       {
         accessorKey: 'created_at',
@@ -80,14 +74,7 @@ export default function StoreListSection({
             <Button
               variant='secondary'
               size='sm'
-              onClick={() => selectStore(row.original, 'read')}
-            >
-              상세정보
-            </Button>
-            <Button
-              variant='secondary'
-              size='sm'
-              onClick={() => selectStore(row.original, 'update')}
+              onClick={() => selectStructure(row.original)}
             >
               수정
             </Button>
@@ -95,11 +82,11 @@ export default function StoreListSection({
         )
       }
     ],
-    [selectStore]
+    [selectStructure]
   );
 
   const table = useReactTable({
-    data: stores,
+    data: structures,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -116,8 +103,8 @@ export default function StoreListSection({
   });
 
   return (
-    <Section className='w-full'>
-      <SectionTitle>매장 목록</SectionTitle>
+    <Section>
+      <SectionTitle>스트럭처 목록</SectionTitle>
       <SectionContent>
         <div className='rounded-md border'>
           <Table>
