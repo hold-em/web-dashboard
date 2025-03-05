@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { VariantProps, cva } from 'class-variance-authority';
 import { PanelLeft } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -19,6 +20,8 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { DialogTitle } from './dialog';
+import { useEffect } from 'react';
+import { auth } from '@/lib/auth';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -68,6 +71,14 @@ const SidebarProvider = React.forwardRef<
     },
     ref
   ) => {
+    const { data: session } = useSession();
+
+    useEffect(() => {
+      if (session) {
+        console.log('Session:', session);
+      }
+    }, [session]);
+
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
 

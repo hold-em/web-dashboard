@@ -18,7 +18,7 @@ export const navItems: NavItem[] = [
     url: '/dashboard/overview',
     icon: 'house',
     isActive: false,
-    shortcut: ['cmd', '1'],
+    shortcut: ['1', '1'],
     items: []
   },
   {
@@ -26,21 +26,21 @@ export const navItems: NavItem[] = [
     url: '/dashboard/store-management',
     icon: 'building',
     isActive: false,
-    shortcut: ['cmd', '2']
+    shortcut: ['2', '2']
   },
   {
     title: '게임 관리',
     url: '/dashboard/game-management',
     icon: 'gamepad',
     isActive: false,
-    shortcut: ['cmd', '3']
+    shortcut: ['3', '3']
   },
   {
     title: '테이블 관리',
     url: '/dashboard/table-management',
     icon: 'layoutDashboard',
     isActive: false,
-    shortcut: ['cmd', '4'],
+    shortcut: ['4', '4'],
     items: []
   },
   {
@@ -48,14 +48,14 @@ export const navItems: NavItem[] = [
     url: '/dashboard/customer-management',
     icon: 'users',
     isActive: false,
-    shortcut: ['cmd', '5']
+    shortcut: ['5', '5']
   },
   {
     title: '이용권 관리',
     url: '/dashboard/ticket-management',
     icon: 'ticket',
     isActive: false,
-    shortcut: ['cmd', '6'],
+    shortcut: ['6', '6'],
     items: []
   },
   {
@@ -63,7 +63,15 @@ export const navItems: NavItem[] = [
     url: '/dashboard/payment-management',
     icon: 'creditCard',
     isActive: false,
-    shortcut: ['cmd', '7'],
+    shortcut: ['7', '7'],
+    items: []
+  },
+  {
+    title: '리그 관리',
+    url: '/dashboard/league-management',
+    icon: 'settings',
+    isActive: false,
+    shortcut: ['8', '8'],
     items: []
   }
 ];

@@ -1,15 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { Store } from '@/mocks/stores';
 import { SectionTopToolbar, SectionTopButtonArea } from '@/components/section';
 import StoreListSection from './store-list-section';
 import { Button } from '@/components/ui/button';
 import { PageState } from './store-management-page';
+import { StoreRestResponse } from '@/lib/api';
 
 interface StoreListViewProps {
-  stores: Store[];
-  selectStore: (store: Store, pageState: PageState) => void;
+  stores: StoreRestResponse[];
+  selectStore: (store: StoreRestResponse, pageState: PageState) => void;
   goCreateForm: () => void;
 }
 

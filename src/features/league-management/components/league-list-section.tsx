@@ -22,46 +22,53 @@ import {
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
 import { PAGE_SIZE } from '@/constants/common';
-import { PageState } from './store-management-page';
-import { StoreRestResponse } from '@/lib/api';
-interface StoreListSectionProps {
-  stores: StoreRestResponse[];
-  selectStore: (store: StoreRestResponse, pageState: PageState) => void;
+import { PageState } from './league-management-page';
+import { LeagueRestResponse } from '@/lib/api';
+
+interface LeagueListSectionProps {
+  leagues: LeagueRestResponse[];
+  selectLeague: (league: LeagueRestResponse, pageState: PageState) => void;
 }
 
-export default function StoreListSection({
-  stores,
-  selectStore
-}: StoreListSectionProps) {
+export default function LeagueListSection({
+  leagues,
+  selectLeague
+}: LeagueListSectionProps) {
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({ created_at: false });
+    React.useState<VisibilityState>({
+      created_at: false
+    });
 
-  const columns = React.useMemo<ColumnDef<StoreRestResponse>[]>(
+  const columns = React.useMemo<ColumnDef<LeagueRestResponse>[]>(
     () => [
       {
         accessorKey: 'name',
-        header: '매장명',
+        header: '리그명',
         cell: ({ row }) => <div>{row.getValue('name')}</div>
       },
       {
-        accessorKey: 'phone',
-        header: '전화번호',
-        cell: ({ row }) => <div>{row.getValue('phone')}</div>
+        accessorKey: 'prize_point_weight',
+        header: '상금 포인트',
+        cell: ({ row }) => <div>{row.getValue('prize_point_weight')}</div>
       },
       {
-        accessorKey: 'address',
-        header: '주소',
-        cell: ({ row }) => <div>{row.getValue('address')}</div>
+        accessorKey: 'payed_amount_point_weight',
+        header: '결제 포인트',
+        cell: ({ row }) => (
+          <div>{row.getValue('payed_amount_point_weight')}</div>
+        )
       },
       {
-        accessorKey: 'status',
-        header: '상태',
-        cell: ({ row }) => <div>{row.getValue('status')}</div>
+        accessorKey: 'voucher_payed_amount_point_weight',
+        header: '바우처 포인트',
+        cell: ({ row }) => (
+          <div>{row.getValue('voucher_payed_amount_point_weight')}</div>
+        )
       },
       {
-        accessorKey: 'league',
-        header: '리그',
-        cell: ({ row }) => <div>{row.getValue('league')}</div>
+        accessorKey: 'visit_count_point_weight',
+        header: '방문 포인트',
+        cell: ({ row }) => <div>{row.getValue('visit_count_point_weight')}</div>
       },
       {
         accessorKey: 'created_at',
@@ -79,14 +86,14 @@ export default function StoreListSection({
             <Button
               variant='secondary'
               size='sm'
-              onClick={() => selectStore(row.original, 'read')}
+              onClick={() => selectLeague(row.original, 'read')}
             >
               상세정보
             </Button>
             <Button
               variant='secondary'
               size='sm'
-              onClick={() => selectStore(row.original, 'update')}
+              onClick={() => selectLeague(row.original, 'update')}
             >
               수정
             </Button>
@@ -94,11 +101,11 @@ export default function StoreListSection({
         )
       }
     ],
-    [selectStore]
+    [selectLeague]
   );
 
   const table = useReactTable({
-    data: stores,
+    data: leagues,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -110,13 +117,15 @@ export default function StoreListSection({
     initialState: {
       sorting: [{ id: 'created_at', desc: true }],
       pagination: { pageSize: PAGE_SIZE },
-      columnVisibility: { created_at: false }
+      columnVisibility: {
+        created_at: false
+      }
     }
   });
 
   return (
     <Section className='w-full'>
-      <SectionTitle>매장 목록</SectionTitle>
+      <SectionTitle>리그 목록</SectionTitle>
       <SectionContent>
         <div className='rounded-md border'>
           <Table>
