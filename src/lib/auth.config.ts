@@ -1,6 +1,6 @@
 import type { NextAuthConfig } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { login } from './api';
+import { login } from './api/sdk.gen';
 
 export const authConfig = {
   providers: [
@@ -10,36 +10,39 @@ export const authConfig = {
         username: { label: 'username', type: 'text' },
         password: { label: 'password', type: 'password' }
       },
-      async authorize(credentials: any) {
-        if (!credentials?.username || !credentials?.password) {
-          return null;
-        }
+      async authorize(credentials): Promise<any> {
+        try {
+          const creds = credentials as any;
+          if (!creds.username || !creds.password) return null;
 
-        const { data, error } = await login({
-          body: {
-            username: credentials.username,
-            password: credentials.password
+          const { data, error } = await login({
+            body: {
+              username: creds.username,
+              password: creds.password
+            }
+          });
+
+          if (
+            error ||
+            !data ||
+            data.status !== 'success' ||
+            !data.data?.user_id
+          ) {
+            return null;
           }
-        });
 
-        if (
-          error ||
-          !data ||
-          data.status !== 'success' ||
-          !data.data?.user_id
-        ) {
-          console.error(error);
+          return {
+            id: data.data.user_id,
+            name: creds.username,
+            email: creds.username,
+            accessToken: data.data.access_token || '',
+            refreshToken: data.data.refresh_token || '',
+            role: 'admin'
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
           return null;
         }
-
-        return {
-          id: data.data.user_id,
-          name: data.data.username || credentials.username,
-          email: data.data.username || credentials.username,
-          accessToken: data.data.access_token || '',
-          refreshToken: data.data.refresh_token || '',
-          role: 'admin'
-        };
       }
     })
   ],
@@ -47,10 +50,10 @@ export const authConfig = {
     signIn: '/'
   },
   callbacks: {
-    async jwt({ token, user }: any) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = 'admin';
+        token.role = user.role;
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
       }
