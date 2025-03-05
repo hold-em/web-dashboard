@@ -1,32 +1,38 @@
 import type { NextAuthConfig } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { login } from './api';
 
 export const authConfig = {
   providers: [
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        username: { label: 'username', type: 'text' },
+        password: { label: 'password', type: 'password' }
       },
       async authorize(credentials: any) {
-        if (!credentials?.email || !credentials?.password) {
+        if (!credentials?.username || !credentials?.password) {
           return null;
         }
-        const adminUser = {
-          id: '1',
-          email: 'admin@example.com',
-          password: 'password'
-        };
 
-        if (!adminUser || adminUser.password !== credentials.password) {
+        const { data, error } = await login({
+          body: {
+            username: credentials.username,
+            password: credentials.password
+          }
+        });
+
+        if (error || !data || data.status !== 'success') {
+          console.error(error);
           return null;
         }
 
         return {
-          id: adminUser.id,
-          name: adminUser.email,
-          email: adminUser.email,
+          id: data.data?.user_id,
+          name: data.data?.username,
+          email: data.data?.username,
+          accessToken: data.data?.access_token,
+          refreshToken: data.data?.refresh_token,
           role: 'admin'
         };
       }
@@ -36,10 +42,12 @@ export const authConfig = {
     signIn: '/'
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: any) {
       if (user) {
         token.id = user.id;
         token.role = 'admin';
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
       }
       return token;
     },
@@ -47,6 +55,8 @@ export const authConfig = {
       if (token && session.user) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.accessToken = token.accessToken;
+        session.user.refreshToken = token.refreshToken;
       }
       return session;
     }

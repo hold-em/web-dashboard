@@ -18,10 +18,10 @@ import { toast } from 'sonner';
 import * as z from 'zod';
 
 const formSchema = z.object({
-  email: z.string().email({ message: 'Enter a valid email address' }),
+  username: z.string().min(1, { message: '사용자 이름을 입력해주세요' }),
   password: z
     .string()
-    .min(6, { message: 'Password must be at least 6 characters' })
+    .min(6, { message: '비밀번호는 최소 6자 이상이어야 합니다' })
 });
 
 type UserFormValue = z.infer<typeof formSchema>;
@@ -31,7 +31,7 @@ export default function UserAuthForm() {
   const callbackUrl = searchParams.get('callbackUrl');
   const [loading, startTransition] = useTransition();
   const defaultValues = {
-    email: '',
+    username: '',
     password: ''
   };
   const form = useForm<UserFormValue>({
@@ -42,11 +42,11 @@ export default function UserAuthForm() {
   const onSubmit = async (data: UserFormValue) => {
     startTransition(() => {
       signIn('credentials', {
-        email: data.email,
+        username: data.username,
         password: data.password,
         callbackUrl: callbackUrl ?? '/dashboard'
       });
-      toast.success('Logged in successfully!');
+      toast.success('로그인 성공!');
     });
   };
 
@@ -59,15 +59,16 @@ export default function UserAuthForm() {
         >
           <FormField
             control={form.control}
-            name='email'
+            name='username'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>사용자 이름</FormLabel>
                 <FormControl>
                   <Input
-                    type='email'
-                    placeholder='name@example.com'
+                    type='text'
+                    placeholder='관리자 아이디를 입력하세요'
                     disabled={loading}
+                    className='text-black dark:text-white'
                     {...field}
                   />
                 </FormControl>
@@ -81,12 +82,13 @@ export default function UserAuthForm() {
             name='password'
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel>비밀번호</FormLabel>
                 <FormControl>
                   <Input
                     type='password'
-                    placeholder='Enter your password'
+                    placeholder='비밀번호를 입력하세요'
                     disabled={loading}
+                    className='text-black dark:text-white'
                     {...field}
                   />
                 </FormControl>
@@ -96,7 +98,7 @@ export default function UserAuthForm() {
           />
 
           <Button disabled={loading} className='w-full' type='submit'>
-            Sign In
+            로그인
           </Button>
         </form>
       </Form>
