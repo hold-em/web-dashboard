@@ -5,6 +5,7 @@ import PageTitle from '../page-title';
 import NotificationButton from '../notification-button';
 import StoreSelect from './store-select';
 import { Separator } from '../ui/separator';
+import ThemeToggle from './ThemeToggle/theme-toggle';
 
 export default function Header() {
   return (
@@ -18,6 +19,7 @@ export default function Header() {
         <StoreSelect />
         <NotificationButton />
         <UserNav />
+        {/* <ThemeToggle /> */}
       </div>
     </header>
   );

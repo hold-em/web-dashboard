@@ -12,6 +12,11 @@ export default function OverViewLayout({
   return (
     <PageContainer>
       <div className='flex flex-1 flex-col space-y-3'>
+        <CardContent>
+          <p className='mt-2 text-xs text-muted-foreground'>
+            현재 대시보드는 데모 데이터입니다.
+          </p>
+        </CardContent>
         <div className='grid gap-4 lg:grid-cols-3'>
           <Card>
             <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
