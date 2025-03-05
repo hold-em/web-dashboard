@@ -3,15 +3,12 @@
 // https://nextjs.org/docs/app/building-your-application/routing/middleware
 
 import NextAuth from 'next-auth';
-import authConfig from '@/lib/auth.config';
+import { authConfig } from '@/lib/auth.config';
 
-const { auth } = NextAuth(authConfig);
+export const { auth: middleware } = NextAuth(authConfig);
 
-export default auth((req) => {
-  if (!req.auth) {
-    const url = req.url.replace(req.nextUrl.pathname, '/');
-    return Response.redirect(url);
-  }
-});
-
-export const config = { matcher: ['/dashboard/:path*'] };
+// 미들웨어 설정
+export const config = {
+  // 인증이 필요한 경로 설정
+  matcher: ['/dashboard/:path*']
+};
