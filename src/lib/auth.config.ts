@@ -36,8 +36,7 @@ export const authConfig = {
             name: creds.username,
             email: creds.username,
             accessToken: data.data.access_token || '',
-            refreshToken: data.data.refresh_token || '',
-            role: 'admin'
+            refreshToken: data.data.refresh_token || ''
           };
         } catch (error) {
           console.error('Auth error:', error);
