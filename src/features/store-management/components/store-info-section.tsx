@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Section, SectionTitle, SectionContent } from '@/components/section';
 import {
   FormLabel,
@@ -10,7 +10,6 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Store } from '@/mocks/stores';
 import { storeSchema, type StoreFormValues } from '../utils/form-schema';
 import { cn } from '@/lib/utils';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,52 +24,59 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { PageState } from './store-management-page';
-import { v4 as uuidv4 } from 'uuid';
+import { useStores } from '@/hooks/use-stores';
+import { StoreRestResponse } from '@/lib/api';
+import { useDaumPostcodePopup } from 'react-daum-postcode';
 
-const leagueItems = ['리그A', '리그B', '리그C'] as const;
-
-const convenienceInfoItems = [
-  '주차 가능',
-  '신용카드 가능',
-  '와이파이',
-  '예약가능',
-  '단체석',
-  '흡연실',
-  '발렛파킹'
-] as const;
+const facilityTypeMap = {
+  PARKING_LOT: '주차 가능',
+  CREDIT_CARD: '신용카드 가능',
+  WIFI: '와이파이',
+  RESERVATION: '예약가능',
+  GROUP_TABLE: '단체석',
+  SMOKING_ROOM: '흡연실',
+  VALET_PARKING: '발렛파킹'
+} as const;
 
 interface StoreInfoSectionProps {
-  selectedStore: Store | null;
+  selectedStore: StoreRestResponse | null;
   pageState: PageState;
-  createStore: (store: Store) => void;
-  updateStore: (store: Store) => void;
 }
 
 export default function StoreInfoSection({
   selectedStore,
-  pageState,
-  createStore,
-  updateStore
+  pageState
 }: StoreInfoSectionProps) {
+  const { createStore, updateStore } = useStores();
+  const open = useDaumPostcodePopup();
+
   const initialValues: StoreFormValues = selectedStore
     ? {
-        representative_image_url:
-          selectedStore.representative_image || undefined,
-        representative_image_file: undefined,
         name: selectedStore.name,
-        phone: selectedStore.phone,
+        phone_number: selectedStore.phone_number,
         address: selectedStore.address,
-        league: selectedStore.league,
-        convenience_info: selectedStore.convenience_info
+        league_id: Number(selectedStore.league_id),
+        longitude: selectedStore.longitude || 0,
+        latitude: selectedStore.latitude || 0,
+        store_image_file_ids: selectedStore.store_image_file_ids || [],
+        available_facility_types: selectedStore.available_facility_types.map(
+          (info) => {
+            const entry = Object.entries(facilityTypeMap).find(
+              ([_, value]) => (value as string) === info
+            );
+            return entry ? (entry[0] as keyof typeof facilityTypeMap) : 'WIFI';
+          }
+        )
       }
     : {
-        representative_image_url: undefined,
-        representative_image_file: undefined,
         name: '',
-        phone: '',
+        phone_number: '',
         address: '',
-        league: '',
-        convenience_info: []
+        league_id: 1,
+        longitude: 0,
+        latitude: 0,
+        store_image_file_ids: [],
+        available_facility_types: []
       };
 
   const form = useForm<StoreFormValues>({
@@ -79,24 +85,46 @@ export default function StoreInfoSection({
     defaultValues: initialValues
   });
 
-  const onSubmit = (data: StoreFormValues) => {
-    const { name, phone, address, league, convenience_info } = data;
-    const store: Store = {
-      id: selectedStore ? selectedStore.id : uuidv4(),
-      status: '영업전',
-      name,
-      phone,
-      address,
-      league,
-      convenience_info,
-      created_at: new Date().toISOString()
-    };
-    if (pageState === 'create') {
-      createStore(store);
-    } else {
-      updateStore(store);
-    }
-  };
+  const handleComplete = useCallback(
+    (data: any) => {
+      let fullAddress = data.address;
+      let extraAddress = '';
+
+      if (data.addressType === 'R') {
+        if (data.bname !== '') {
+          extraAddress += data.bname;
+        }
+        if (data.buildingName !== '') {
+          extraAddress +=
+            extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName;
+        }
+        fullAddress += extraAddress !== '' ? ` (${extraAddress})` : '';
+      }
+
+      form.setValue('address', fullAddress);
+      form.setValue('longitude', Number(data.x));
+      form.setValue('latitude', Number(data.y));
+    },
+    [form]
+  );
+
+  const handleClick = useCallback(() => {
+    open({ onComplete: handleComplete });
+  }, [open, handleComplete]);
+
+  const onSubmit = useCallback(
+    (data: StoreFormValues) => {
+      if (pageState === 'create') {
+        createStore(data);
+      } else if (pageState === 'update' && selectedStore) {
+        updateStore({
+          storeId: Number(selectedStore.id),
+          ...data
+        });
+      }
+    },
+    [pageState, selectedStore, createStore, updateStore]
+  );
 
   const readOnly = pageState === 'read';
 
@@ -105,30 +133,7 @@ export default function StoreInfoSection({
       <SectionTitle>매장 정보</SectionTitle>
       <SectionContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <FormField
-              control={form.control}
-              name='representative_image_file'
-              render={({ field: { ref, onChange, onBlur } }) => (
-                <FormItem>
-                  <FormLabel>매장 대표사진</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='file'
-                      accept='image/*'
-                      disabled={readOnly}
-                      onChange={(e) => {
-                        onChange(e.target.files?.[0]);
-                        form.setValue('representative_image_url', '');
-                      }}
-                      onBlur={onBlur}
-                      ref={ref}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
             <FormField
               control={form.control}
               name='name'
@@ -146,9 +151,10 @@ export default function StoreInfoSection({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
-              name='phone'
+              name='phone_number'
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>전화번호</FormLabel>
@@ -168,7 +174,6 @@ export default function StoreInfoSection({
                             '$1-$2-$3'
                           );
                         }
-                        e.currentTarget.value = value;
                         field.onChange(value);
                       }}
                     />
@@ -183,36 +188,48 @@ export default function StoreInfoSection({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>매장 주소</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder='매장 주소를 입력하세요'
-                      disabled={readOnly}
-                      {...field}
-                    />
-                  </FormControl>
+                  <div className='flex gap-2'>
+                    <FormControl>
+                      <Input
+                        placeholder='매장 주소를 입력하세요'
+                        disabled={readOnly}
+                        {...field}
+                      />
+                    </FormControl>
+                    {!readOnly && (
+                      <Button
+                        type='button'
+                        variant='outline'
+                        onClick={handleClick}
+                        className='w-32'
+                      >
+                        주소 검색
+                      </Button>
+                    )}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name='league'
+              name='league_id'
               render={({ field: { value, onChange } }) => (
                 <FormItem>
                   <FormLabel>리그</FormLabel>
                   <FormControl>
                     <Select
-                      value={value}
+                      value={String(value)}
                       disabled={readOnly}
-                      onValueChange={onChange}
+                      onValueChange={(val) => onChange(Number(val))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder='리그 선택' />
                       </SelectTrigger>
                       <SelectContent>
-                        {leagueItems.map((item) => (
-                          <SelectItem key={item} value={item}>
-                            {item}
+                        {[1, 2, 3].map((id) => (
+                          <SelectItem key={id} value={String(id)}>
+                            {`리그${id}`}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -225,37 +242,41 @@ export default function StoreInfoSection({
             <FormItem>
               <FormLabel>편의정보</FormLabel>
               <div className={cn('grid grid-cols-2 gap-2')}>
-                {convenienceInfoItems.map((item) => (
+                {Object.entries(facilityTypeMap).map(([type, label]) => (
                   <FormField
-                    key={item}
+                    key={type}
                     control={form.control}
-                    name='convenience_info'
+                    name='available_facility_types'
                     render={({ field }) => {
                       return (
                         <FormItem
-                          key={item}
+                          key={type}
                           className='mb-0 flex flex-row items-start space-x-3 space-y-0'
                         >
                           <FormControl>
                             <Checkbox
-                              checked={Boolean(field.value?.includes(item))}
+                              checked={field.value?.includes(
+                                type as keyof typeof facilityTypeMap
+                              )}
                               disabled={readOnly}
                               onCheckedChange={(checked) => {
+                                const facilityType =
+                                  type as keyof typeof facilityTypeMap;
                                 return checked
                                   ? field.onChange([
-                                      ...(field.value ?? []),
-                                      item
+                                      ...field.value,
+                                      facilityType
                                     ])
                                   : field.onChange(
                                       field.value?.filter(
-                                        (value) => value !== item
+                                        (value) => value !== facilityType
                                       )
                                     );
                               }}
                             />
                           </FormControl>
                           <FormLabel className='text-sm font-normal'>
-                            {item}
+                            {label}
                           </FormLabel>
                         </FormItem>
                       );
@@ -264,7 +285,6 @@ export default function StoreInfoSection({
                 ))}
               </div>
             </FormItem>
-            <FormMessage />
             {!readOnly && (
               <Button type='submit'>
                 {pageState === 'create' ? '추가' : '수정'}

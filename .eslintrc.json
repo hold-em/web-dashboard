@@ -1,11 +1,6 @@
 {
-  "extends": [
-    "next/core-web-vitals",
-    "plugin:storybook/recommended"
-  ],
-  "plugins": [
-    "@typescript-eslint"
-  ],
+  "extends": ["next/core-web-vitals", "plugin:storybook/recommended"],
+  "plugins": ["@typescript-eslint"],
   "rules": {
     "@typescript-eslint/no-unused-vars": [
       "warn",
@@ -16,5 +11,8 @@
     "import/no-unresolved": "error",
     "import/named": "off",
     "no-console": "warn"
+  },
+  "import/resolver": {
+    "typescript": {} // 이렇게 하면 tsconfig.json의 paths를 인식합니다
   }
 }

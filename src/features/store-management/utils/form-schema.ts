@@ -1,27 +1,24 @@
 import * as z from 'zod';
 
+const facilityTypes = [
+  'PARKING_LOT',
+  'CREDIT_CARD',
+  'WIFI',
+  'RESERVATION',
+  'GROUP_TABLE',
+  'SMOKING_ROOM',
+  'VALET_PARKING'
+] as const;
+
 export const storeSchema = z.object({
-  representative_image_url: z.string().url().nullable().optional(),
-  representative_image_file: z.preprocess(
-    (val) => (val instanceof File ? val : undefined),
-    z
-      .instanceof(File)
-      .refine(
-        (file) => file.type.startsWith('image/'),
-        '대표사진은 이미지 파일이어야 합니다.'
-      )
-      .optional()
-  ),
-  name: z.string().min(1, '매장이름을 입력해 주세요.'),
-  phone: z
-    .string()
-    .min(1, '전화번호를 입력해 주세요.')
-    .refine((value) => /^(\d{2,3}-\d{3,4}-\d{4})$/.test(value), {
-      message: '전화번호 형식이 올바르지 않습니다. (예: 010-1234-5678)'
-    }),
-  address: z.string().min(1, '매장 주소를 입력해 주세요.'),
-  league: z.string().min(1, '리그를 선택해 주세요.'),
-  convenience_info: z.array(z.string())
+  name: z.string().min(1, { message: '매장 이름을 입력해주세요' }),
+  phone_number: z.string().min(1, { message: '전화번호를 입력해주세요' }),
+  address: z.string().min(1, { message: '주소를 입력해주세요' }),
+  league_id: z.number(),
+  longitude: z.number(),
+  latitude: z.number(),
+  store_image_file_ids: z.array(z.string()),
+  available_facility_types: z.array(z.enum(facilityTypes))
 });
 
 export type StoreFormValues = z.infer<typeof storeSchema>;
