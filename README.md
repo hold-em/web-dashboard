@@ -13,7 +13,7 @@
 
 ## Overview
 
-This is a starter template using the following stack:
+This is a starter template using the following stack
 
 - Framework - [Next.js 15](https://nextjs.org/13)
 - Language - [TypeScript](https://www.typescriptlang.org)
