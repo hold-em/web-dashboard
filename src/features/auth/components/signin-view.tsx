@@ -1,11 +1,10 @@
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { GitHubLogoIcon } from '@radix-ui/react-icons';
-import { StarIcon } from 'lucide-react';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import UserAuthForm from './user-auth-form';
 import Image from 'next/image';
+import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'YAJASU Admin Login',
@@ -48,7 +47,9 @@ export default function SignInViewPage() {
               관리자 계정으로 로그인하세요
             </p>
           </div>
-          <UserAuthForm />
+          <Suspense fallback={<div>Loading...</div>}>
+            <UserAuthForm />
+          </Suspense>
           {/* <p className='px-8 text-center text-sm text-muted-foreground'>
             Don&apos;t have an admin account?{' '}
             <Link

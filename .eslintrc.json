@@ -10,9 +10,12 @@
     ],
     "import/no-unresolved": "error",
     "import/named": "off",
-    "no-console": "warn"
+    "no-console": "warn",
+    "react/no-unescaped-entities": "off"
   },
-  "import/resolver": {
-    "typescript": {} // 이렇게 하면 tsconfig.json의 paths를 인식합니다
+  "settings": {
+    "import/resolver": {
+      "typescript": {}
+    }
   }
 }
