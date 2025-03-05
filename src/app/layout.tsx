@@ -7,8 +7,8 @@ import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Next Shadcn',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  title: 'YAJASU',
+  description: 'YAJASU 관리자 대시보드'
 };
 
 const lato = Lato({
