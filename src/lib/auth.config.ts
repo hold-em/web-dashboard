@@ -22,17 +22,22 @@ export const authConfig = {
           }
         });
 
-        if (error || !data || data.status !== 'success') {
+        if (
+          error ||
+          !data ||
+          data.status !== 'success' ||
+          !data.data?.user_id
+        ) {
           console.error(error);
           return null;
         }
 
         return {
-          id: data.data?.user_id,
-          name: data.data?.username,
-          email: data.data?.username,
-          accessToken: data.data?.access_token,
-          refreshToken: data.data?.refresh_token,
+          id: data.data.user_id,
+          name: data.data.username || credentials.username,
+          email: data.data.username || credentials.username,
+          accessToken: data.data.access_token || '',
+          refreshToken: data.data.refresh_token || '',
           role: 'admin'
         };
       }
