@@ -22,11 +22,11 @@ import {
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
 import { PAGE_SIZE } from '@/constants/common';
-import { Structure } from '@/mocks/games';
+import { GameStructureTemplateRestResponse } from '@/lib/api/types.gen';
 
 interface StructureListSectionProps {
-  structures: Structure[];
-  selectStructure: (structure: Structure) => void;
+  structures: GameStructureTemplateRestResponse[];
+  selectStructure: (structure: GameStructureTemplateRestResponse) => void;
 }
 
 export default function StructureListSection({
@@ -36,33 +36,30 @@ export default function StructureListSection({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({ created_at: false });
 
-  const columns = React.useMemo<ColumnDef<Structure>[]>(
+  const columns = React.useMemo<ColumnDef<GameStructureTemplateRestResponse>[]>(
     () => [
       {
-        accessorKey: 'name',
-        header: '이름',
-        cell: ({ row }) => <div>{row.getValue('name')}</div>
+        accessorKey: 'id',
+        header: 'ID',
+        cell: ({ row }) => <div>{row.getValue('id')}</div>
       },
       {
-        accessorKey: 'level',
-        header: '레벨',
-        cell: ({ row }) => <div>{row.getValue('level')}</div>
-      },
-      {
-        accessorKey: 'ante',
-        header: '엔티',
-        cell: ({ row }) => <div>{row.getValue('ante')}</div>
-      },
-      {
-        accessorKey: 'duration',
-        header: '듀레이션',
-        cell: ({ row }) => <div>{row.getValue('duration')}</div>
+        accessorKey: 'structures',
+        header: '스트럭처',
+        cell: ({ row }) => {
+          const structureData = JSON.parse(row.getValue('structures'));
+          return <div>{structureData.name || '이름 없음'}</div>;
+        }
       },
       {
         accessorKey: 'created_at',
         header: '생성일',
-        cell: ({ row }) =>
-          new Date(row.getValue('created_at')).toLocaleString(),
+        cell: ({ row }) => {
+          const createdAt = row.getValue('created_at') as {
+            [key: string]: unknown;
+          };
+          return new Date(createdAt as unknown as string).toLocaleString();
+        },
         enableHiding: true
       },
       {
@@ -125,9 +122,12 @@ export default function StructureListSection({
               ))}
             </TableHeader>
             <TableBody>
-              {table.getPageCount() > 0 &&
-                table.getPaginationRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(
@@ -137,14 +137,14 @@ export default function StructureListSection({
                       </TableCell>
                     ))}
                   </TableRow>
-                ))}
-              {table.getPageCount() === 0 && (
+                ))
+              ) : (
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
                     className='h-24 text-center'
                   >
-                    정보가 없습니다.
+                    No results.
                   </TableCell>
                 </TableRow>
               )}

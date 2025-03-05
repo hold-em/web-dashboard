@@ -21,45 +21,45 @@ import {
   TableRow
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
-import { Game } from '@/mocks/games';
+import { GameRestResponse } from '@/lib/api/types.gen';
 import { PAGE_SIZE } from '@/constants/common';
 import { PageState } from './game-management-page';
-import { Store } from '@/mocks/stores';
 
 interface GameListSectionProps {
-  games: Game[];
-  stores: Store[];
-  selectGame: (game: Game, pageState: PageState) => void;
+  games: GameRestResponse[];
+  selectGame: (game: GameRestResponse, pageState: PageState) => void;
 }
 
 export default function GameListSection({
   games,
-  stores,
   selectGame
 }: GameListSectionProps) {
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({ created_at: false });
+    React.useState<VisibilityState>({
+      created_at: false
+    });
 
-  const columns = React.useMemo<ColumnDef<Game>[]>(
+  const columns = React.useMemo<ColumnDef<GameRestResponse>[]>(
     () => [
       {
-        accessorKey: 'name',
-        header: '게임명',
-        cell: ({ row }) => <div>{row.getValue('name')}</div>
+        accessorKey: 'id',
+        header: '게임 ID',
+        cell: ({ row }) => <div>{row.getValue('id')}</div>
       },
       {
-        accessorKey: 'store_id',
-        header: '매장',
-        cell: ({ row }) => (
-          <div>
-            {stores.find((item) => item.id === row.getValue('store_id'))!.name}
-          </div>
-        )
+        accessorKey: 'mode',
+        header: '게임 모드',
+        cell: ({ row }) => <div>{row.getValue('mode')}</div>
       },
       {
-        accessorKey: 'start_at',
-        header: '시작시간',
-        cell: ({ row }) => <div>{row.getValue('start_at')}</div>
+        accessorKey: 'buy_in_amount',
+        header: '바이인',
+        cell: ({ row }) => <div>{row.getValue('buy_in_amount')}</div>
+      },
+      {
+        accessorKey: 'max_players',
+        header: '최대 인원',
+        cell: ({ row }) => <div>{row.getValue('max_players')}</div>
       },
       {
         accessorKey: 'status',
@@ -69,8 +69,12 @@ export default function GameListSection({
       {
         accessorKey: 'created_at',
         header: '생성일',
-        cell: ({ row }) =>
-          new Date(row.getValue('created_at')).toLocaleString(),
+        cell: ({ row }) => {
+          const createdAt = row.getValue('created_at') as {
+            [key: string]: unknown;
+          };
+          return new Date(createdAt as unknown as string).toLocaleString();
+        },
         enableHiding: true
       },
       {
@@ -84,7 +88,7 @@ export default function GameListSection({
               size='sm'
               onClick={() => selectGame(row.original, 'read')}
             >
-              상세정보
+              조회
             </Button>
             <Button
               variant='secondary'
@@ -140,9 +144,12 @@ export default function GameListSection({
               ))}
             </TableHeader>
             <TableBody>
-              {table.getPageCount() > 0 &&
-                table.getPaginationRowModel().rows.map((row) => (
-                  <TableRow key={row.id}>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && 'selected'}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
                         {flexRender(
@@ -152,14 +159,14 @@ export default function GameListSection({
                       </TableCell>
                     ))}
                   </TableRow>
-                ))}
-              {table.getPageCount() === 0 && (
+                ))
+              ) : (
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
                     className='h-24 text-center'
                   >
-                    정보가 없습니다.
+                    No results.
                   </TableCell>
                 </TableRow>
               )}

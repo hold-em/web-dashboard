@@ -1,30 +1,41 @@
 'use client';
 
-import { Game, Structure } from '@/mocks/games';
+import {
+  GameRestResponse,
+  GameStructureTemplateRestResponse,
+  StoreRestResponse,
+  GameTableRestResponse,
+  GameTypeRestResponse
+} from '@/lib/api/types.gen';
 import { SectionTopToolbar, BackButton } from '@/components/section';
 import GameCreationInfoSection from './game-creation-info-section';
-import { GameTable } from '@/mocks/tables';
-import { Store } from '@/mocks/stores';
+import { useGameTables } from '@/hooks/use-game-tables';
 
 interface GameCreationViewProps {
-  selectedGame: Game | null;
-  structures: Structure[];
-  tables: GameTable[];
-  stores: Store[];
-  addGame: (game: Game) => void;
-  updateGame: (game: Game) => void;
+  selectedGame: GameRestResponse | null;
+  structures: GameStructureTemplateRestResponse[];
+  stores: StoreRestResponse[];
+  gameTypes: GameTypeRestResponse[];
+  addGame: (game: GameRestResponse) => void;
+  updateGame: (game: GameRestResponse) => void;
   goBack: () => void;
 }
 
 export default function GameCreationView({
   selectedGame,
   structures,
-  tables,
   stores,
+  gameTypes,
   addGame,
   updateGame,
   goBack
 }: GameCreationViewProps) {
+  const { tables, isLoading } = useGameTables(selectedGame?.id);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <SectionTopToolbar>
@@ -33,8 +44,9 @@ export default function GameCreationView({
       <GameCreationInfoSection
         initialData={selectedGame}
         structures={structures}
-        tables={tables}
         stores={stores}
+        gameTypes={gameTypes}
+        tables={tables?.data || []}
         addGame={addGame}
         updateGame={updateGame}
       />

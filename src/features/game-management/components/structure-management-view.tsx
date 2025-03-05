@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Structure } from '@/mocks/games';
+import { useState } from 'react';
+import { GameStructureTemplateRestResponse } from '@/lib/api/types.gen';
 import {
   SectionTopToolbar,
   SectionTopButtonArea,
@@ -12,9 +12,9 @@ import StructureListSection from './structure-list-section';
 import StructureFormDialog from './structure-form-dialog';
 
 interface StructureManagementViewProps {
-  structures: Structure[];
-  addStructure: (structure: Structure) => void;
-  updateStructure: (structure: Structure) => void;
+  structures: GameStructureTemplateRestResponse[];
+  addStructure: (structure: GameStructureTemplateRestResponse) => void;
+  updateStructure: (structure: GameStructureTemplateRestResponse) => void;
   goBack: () => void;
 }
 
@@ -24,12 +24,11 @@ export default function StructureManagementView({
   updateStructure,
   goBack
 }: StructureManagementViewProps) {
-  const [selectedStructure, setSelectedStructure] = useState<Structure | null>(
-    null
-  );
+  const [selectedStructure, setSelectedStructure] =
+    useState<GameStructureTemplateRestResponse | null>(null);
   const [open, setOpen] = useState<boolean>(false);
 
-  const selectStructure = (structure: Structure) => {
+  const selectStructure = (structure: GameStructureTemplateRestResponse) => {
     setSelectedStructure(structure);
     setOpen(true);
   };

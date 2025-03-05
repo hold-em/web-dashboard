@@ -3462,7 +3462,7 @@ export type DeleteVoucherTemplateResponse =
   DeleteVoucherTemplateResponses[keyof DeleteVoucherTemplateResponses];
 
 export type ClientOptions = {
-  baseUrl:
+  baseURL:
     | 'https://dev.api.yajasu.kr'
     | 'http://dev.api.yajasu.kr'
     | (string & {});

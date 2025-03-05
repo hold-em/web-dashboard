@@ -4,7 +4,7 @@ import type {
   Options as ClientOptions,
   TDataShape,
   Client
-} from '@hey-api/client-fetch';
+} from '@hey-api/client-axios';
 import type {
   FindByIdData,
   FindByIdResponse,

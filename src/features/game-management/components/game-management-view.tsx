@@ -1,32 +1,26 @@
 'use client';
 
 import * as React from 'react';
-import { Game } from '@/mocks/games';
+import { GameRestResponse } from '@/lib/api/types.gen';
 import { SectionTopToolbar, SectionTopButtonArea } from '@/components/section';
 import GameListSection from './game-list-section';
 import { Button } from '@/components/ui/button';
 import { PageState } from './game-management-page';
-import { Store } from '@/mocks/stores';
 import TableStatusSection from './table-status-section';
-import { GameTable } from '@/mocks/tables';
 
-interface StoreListViewProps {
-  games: Game[];
-  stores: Store[];
-  tables: GameTable[];
-  selectGame: (game: Game, pageState: PageState) => void;
+interface GameManagementViewProps {
+  games: GameRestResponse[];
+  selectGame: (game: GameRestResponse, pageState: PageState) => void;
   goStructureManagement: () => void;
   goCreateForm: () => void;
 }
 
-export default function StoreListView({
+export default function GameManagementView({
   games,
-  stores,
-  tables,
   selectGame,
   goStructureManagement,
   goCreateForm
-}: StoreListViewProps) {
+}: GameManagementViewProps) {
   return (
     <>
       <SectionTopToolbar>
@@ -39,8 +33,7 @@ export default function StoreListView({
           </Button>
         </SectionTopButtonArea>
       </SectionTopToolbar>
-      <GameListSection games={games} stores={stores} selectGame={selectGame} />
-      <TableStatusSection tables={tables} />
+      <GameListSection games={games} selectGame={selectGame} />
     </>
   );
 }

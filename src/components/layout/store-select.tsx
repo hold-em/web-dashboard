@@ -7,17 +7,23 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { mockStores } from '@/mocks/stores';
+import { useStores } from '@/hooks/use-stores';
 
 export default function StoreSelect() {
+  const { stores, isLoading } = useStores();
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <Select>
       <SelectTrigger>
         <SelectValue placeholder='매장 선택' />
       </SelectTrigger>
       <SelectContent>
-        {mockStores.map((item) => (
-          <SelectItem key={item.id} value={item.id}>
+        {stores?.map((item) => (
+          <SelectItem key={item.id} value={item.id.toString()}>
             {item.name}
           </SelectItem>
         ))}

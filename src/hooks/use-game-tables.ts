@@ -1,8 +1,9 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   createGameTable,
   updateGameTable,
-  changeGameTableParticipants
+  changeGameTableParticipants,
+  getGameTables
 } from '@/lib/api';
 import type {
   CreateGameTableRestRequest,
@@ -10,8 +11,21 @@ import type {
   ChangeGameTableParticipantsRestRequest
 } from '@/lib/api';
 
-export function useGameTables() {
+export function useGameTables(gameId?: string) {
   const queryClient = useQueryClient();
+
+  // Get game tables
+  const { data: tables, isLoading } = useQuery({
+    queryKey: ['gameTables', gameId],
+    queryFn: async () => {
+      if (!gameId) return null;
+      const response = await getGameTables({
+        path: { gameId }
+      });
+      return response.data;
+    },
+    enabled: !!gameId
+  });
 
   // Create game table mutation
   const { mutate: createGameTableMutation, isPending: isCreatingTable } =
@@ -83,6 +97,8 @@ export function useGameTables() {
   });
 
   return {
+    tables,
+    isLoading,
     createGameTable: createGameTableMutation,
     isCreatingTable,
     updateGameTable: updateGameTableMutation,
