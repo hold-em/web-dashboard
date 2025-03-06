@@ -31,7 +31,6 @@ export default function AppSidebar() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
   const { data: session } = useSession();
-  console.log('🚀 ~ AppSidebar ~ session:', session);
 
   // Get navigation items based on user role
   const navigationItems = getNavItems(session?.user?.role);

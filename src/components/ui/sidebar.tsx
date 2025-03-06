@@ -72,12 +72,6 @@ const SidebarProvider = React.forwardRef<
   ) => {
     const { data: session } = useSession();
 
-    useEffect(() => {
-      if (session) {
-        console.log('Session:', session);
-      }
-    }, [session]);
-
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);
 

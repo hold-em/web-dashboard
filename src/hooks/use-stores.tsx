@@ -1,9 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createStore, updateStore, getCreatedStores } from '@/lib/api';
 import type { CreateStoreRestRequest, UpdateStoreRestRequest } from '@/lib/api';
-
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
 export const useStores = () => {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // 매장 목록 조회
   const {
@@ -17,6 +19,7 @@ export const useStores = () => {
       return data?.data ?? [];
     }
   });
+  console.log('🚀 ~ useStores ~ stores:', stores);
 
   // 매장 생성
   const createStoreMutation = useMutation({
@@ -36,7 +39,9 @@ export const useStores = () => {
       return data;
     },
     onSuccess: () => {
+      toast.success('매장이 성공적으로 생성되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['stores'] });
+      router.back();
     }
   });
 
@@ -62,7 +67,9 @@ export const useStores = () => {
       return data;
     },
     onSuccess: () => {
+      toast.success('매장 정보가 성공적으로 수정되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['stores'] });
+      router.back();
     }
   });
 

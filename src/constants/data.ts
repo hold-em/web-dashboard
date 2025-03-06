@@ -72,20 +72,21 @@ const adminNavItems: NavItem[] = [
     '리그 관리',
     '/dashboard/league-management',
     'settings',
-    ['8', '8'],
+    ['1', '1'],
     []
   ),
   createNavItem(
     '관리자 관리',
     '/dashboard/admin-management',
     'settings',
-    ['9', '9'],
+    ['2', '2'],
     []
   )
 ];
 
 // Function to get navigation items based on user role
 export const getNavItems = (role?: string): NavItem[] => {
+  if (!role) return [];
   // If the user is a system admin, include admin-specific items
   if (role === 'SYSTEM_ADMIN') {
     return [...adminNavItems];

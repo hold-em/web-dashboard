@@ -1,5 +1,5 @@
 'use client';
-import { navItems } from '@/constants/data';
+import { getNavItems, navItems } from '@/constants/data';
 import {
   KBarAnimator,
   KBarPortal,
@@ -11,18 +11,21 @@ import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import RenderResults from './render-result';
 import useThemeSwitching from './use-theme-switching';
+import { useSession } from 'next-auth/react';
 
 export default function KBar({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-
+  const { data: session } = useSession();
   const navigateTo = (url: string) => {
     router.push(url);
   };
 
+  const navigationItems = getNavItems(session?.user?.role);
+
   // These action are for the navigation
   const actions = useMemo(
     () =>
-      navItems.flatMap((navItem) => {
+      navigationItems.flatMap((navItem) => {
         // Only include base action if the navItem has a real URL and is not just a container
         const baseAction =
           navItem.url !== '#'
