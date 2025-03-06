@@ -361,7 +361,7 @@ export default function GameCreationInfoSection({
                         type='number'
                         id={name}
                         placeholder={placeholder}
-                        value={field.value ?? ''}
+                        value={field.value ? String(field.value) : ''}
                         onChange={(e) =>
                           field.onChange(
                             e.target.value ? Number(e.target.value) : undefined
