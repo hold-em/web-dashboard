@@ -16,6 +16,7 @@ import type {
   UpdateGameRestRequest
 } from '@/lib/api/types.gen';
 import { useQueryClient } from '@tanstack/react-query';
+import { useSelectedStore } from '@/hooks/use-selected-store';
 
 export type PageState = 'list' | 'create' | 'read' | 'update' | 'structure';
 
@@ -29,6 +30,7 @@ export default function GameManagementPage() {
     createGame,
     updateGame: updateGameMutation
   } = useGames();
+  const { selectedStore } = useSelectedStore();
 
   const { templates: structures, isLoading: isLoadingTemplates } =
     useGameTemplates();

@@ -189,33 +189,15 @@ export default function GameCreationInfoSection({
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name='store_id'
-              render={({ field: { value, onChange } }) => (
-                <FormItem>
-                  <FormLabel>매장</FormLabel>
-                  <FormControl>
-                    <Select
-                      value={value ? String(value) : ''}
-                      onValueChange={(val) => onChange(Number(val))}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='매장 선택' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {stores.map((store) => (
-                          <SelectItem key={store.id} value={String(store.id)}>
-                            {store.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem>
+              <FormLabel>매장</FormLabel>
+              <FormControl>
+                <div className='text-sm text-muted-foreground'>
+                  {stores.find((store) => store.id === initialData?.store_id)
+                    ?.name || '현재 선택된 매장'}
+                </div>
+              </FormControl>
+            </FormItem>
             <FormField
               control={form.control}
               name='scheduled_at'

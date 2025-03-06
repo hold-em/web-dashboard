@@ -1,19 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getGames, createGame, updateGame, getGame } from '@/lib/api';
 import type { CreateGameRestRequest, UpdateGameRestRequest } from '@/lib/api';
+import { useSelectedStore } from './use-selected-store';
 
 export function useGames() {
   const queryClient = useQueryClient();
+  const { selectedStore } = useSelectedStore();
 
   // Get all games
   const { data: games, isLoading } = useQuery({
     queryKey: ['games'],
     queryFn: async () => {
       const response = await getGames({
-        path: { storeId: 1 }
+        path: { storeId: selectedStore?.id ?? 0 }
       });
       return response.data;
-    }
+    },
+    enabled: !!selectedStore?.id
   });
 
   // Get single game
@@ -35,7 +38,7 @@ export function useGames() {
     mutationFn: async (data: CreateGameRestRequest) => {
       const response = await createGame({
         body: data,
-        path: { storeId: 1 }
+        path: { storeId: selectedStore?.id ?? 0 }
       });
       return response.data;
     },
