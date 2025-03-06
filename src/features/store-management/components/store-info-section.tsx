@@ -126,8 +126,11 @@ export default function StoreInfoSection({
       }
 
       form.setValue('address', fullAddress);
-      form.setValue('longitude', Number(data.x));
-      form.setValue('latitude', Number(data.y));
+      // TODO: 카카오 API로 위도 경도 가져올 것
+      // form.setValue('longitude', Number(data.x));
+      // form.setValue('latitude', Number(data.y));
+      form.setValue('longitude', 0);
+      form.setValue('latitude', 0);
     },
     [form]
   );
