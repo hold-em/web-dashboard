@@ -11,6 +11,11 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'api.slingacademy.com',
         port: ''
+      },
+      {
+        protocol: 'https',
+        hostname: 'test-public-holdem.s3.ap-northeast-2.amazonaws.com',
+        port: ''
       }
     ]
   },

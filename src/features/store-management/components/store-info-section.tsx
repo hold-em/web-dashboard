@@ -28,9 +28,9 @@ import { useStores } from '@/hooks/use-stores';
 import { StoreRestResponse } from '@/lib/api';
 import { useDaumPostcodePopup } from 'react-daum-postcode';
 import { FileUploader } from '@/components/file-uploader';
-import { getPresignedUploadUrl, getPresignedGetUrl } from '@/lib/api/sdk.gen';
 import Image from 'next/image';
 import { useLeagues } from '@/hooks/use-leagues';
+import { useImageUpload } from '@/hooks/use-image-upload';
 
 const facilityTypeMap = {
   PARKING_LOT: '주차 가능',
@@ -51,235 +51,9 @@ export default function StoreInfoSection({
   selectedStore,
   pageState
 }: StoreInfoSectionProps) {
-  console.log('🚀 ~ selectedStore:', selectedStore);
   const { createStore, updateStore } = useStores();
   const open = useDaumPostcodePopup();
-  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
-    {}
-  );
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [filePreviewMap, setFilePreviewMap] = useState<Record<string, string>>(
-    {}
-  );
   const { leagues } = useLeagues();
-
-  // Function to test if an image URL is accessible
-  const testImageUrl = async (url: string): Promise<boolean> => {
-    try {
-      console.log(`Testing image URL: ${url}`);
-      const response = await fetch(url, { method: 'HEAD' });
-      console.log(`URL test result: ${response.status} ${response.statusText}`);
-      return response.ok;
-    } catch (error) {
-      console.error(`Error testing URL ${url}:`, error);
-      return false;
-    }
-  };
-
-  useEffect(() => {
-    const loadPreviewUrls = async () => {
-      if (selectedStore?.store_image_file_ids?.length) {
-        console.log(
-          'Loading images for file IDs:',
-          selectedStore.store_image_file_ids
-        );
-        const newFilePreviewMap: Record<string, string> = {};
-
-        const urls = await Promise.all(
-          selectedStore.store_image_file_ids.map(async (fileId) => {
-            console.log(`Fetching presigned URL for file ID: ${fileId}`);
-            try {
-              // Try up to 3 times to get a valid presigned URL
-              let attempts = 0;
-              let url = '';
-
-              while (attempts < 3 && !url) {
-                attempts++;
-                try {
-                  const response = await getPresignedGetUrl({
-                    path: { fileId: String(fileId) }
-                  });
-
-                  console.log(
-                    `Response for file ${fileId} (attempt ${attempts}):`,
-                    response
-                  );
-
-                  url = response.data?.data?.object_url || '';
-                  console.log(`Got URL for file ${fileId}:`, url);
-
-                  if (!url) {
-                    console.warn(
-                      `Empty URL received for file ${fileId}, retrying...`
-                    );
-                    await new Promise((resolve) => setTimeout(resolve, 500)); // Wait 500ms before retry
-                  }
-                } catch (retryError) {
-                  console.error(
-                    `Error on attempt ${attempts} for file ${fileId}:`,
-                    retryError
-                  );
-                  await new Promise((resolve) => setTimeout(resolve, 500)); // Wait 500ms before retry
-                }
-              }
-
-              if (url) {
-                // Test if the URL is accessible
-                const isAccessible = await testImageUrl(url);
-                console.log(`URL ${url} is accessible: ${isAccessible}`);
-
-                if (isAccessible) {
-                  newFilePreviewMap[String(fileId)] = url;
-                } else {
-                  console.warn(
-                    `URL ${url} is not accessible, won't add to preview map`
-                  );
-                }
-              }
-              return url;
-            } catch (error) {
-              console.error(
-                `Error getting presigned URL for file ${fileId}:`,
-                error
-              );
-              return '';
-            }
-          })
-        );
-
-        console.log('All image URLs:', urls);
-        console.log('File preview map:', newFilePreviewMap);
-
-        setPreviewUrls(urls.filter(Boolean));
-        setFilePreviewMap(newFilePreviewMap);
-      } else {
-        setFilePreviewMap({});
-        setPreviewUrls([]);
-      }
-    };
-
-    loadPreviewUrls();
-  }, [selectedStore?.store_image_file_ids]);
-
-  const handleUpload = async (files: File[]) => {
-    console.log(
-      `Starting upload for ${files.length} files:`,
-      files.map((f) => f.name)
-    );
-
-    for (const file of files) {
-      try {
-        console.log(
-          `Processing file: ${file.name}, size: ${file.size}, type: ${file.type}`
-        );
-
-        // Get presigned URL
-        console.log('Requesting presigned upload URL...');
-        const presignedResponse = await getPresignedUploadUrl({
-          query: {
-            filename: file.name
-          }
-        });
-        console.log('Presigned upload response:', presignedResponse);
-
-        if (!presignedResponse.data?.data) {
-          console.error(
-            'No data in presigned URL response:',
-            presignedResponse
-          );
-          throw new Error('Failed to get presigned URL');
-        }
-
-        const { upload_url: presignedUrl, file: uploadedFile } =
-          presignedResponse.data.data;
-        console.log('Got presigned URL:', presignedUrl);
-        console.log('File metadata:', uploadedFile);
-
-        // Create a local preview URL for the uploaded file
-        const fileUrl = URL.createObjectURL(file);
-        console.log('Created local preview URL:', fileUrl);
-
-        // Update filePreviewMap with the new file
-        setFilePreviewMap((prev) => ({
-          ...prev,
-          [String(uploadedFile.id)]: fileUrl
-        }));
-        console.log(`Added file ID ${uploadedFile.id} to preview map`);
-
-        // Update form value
-        const currentFileIds = form.getValues('store_image_file_ids') || [];
-        console.log('Current file IDs in form:', currentFileIds);
-
-        form.setValue('store_image_file_ids', [
-          ...currentFileIds,
-          String(uploadedFile.id)
-        ]);
-        console.log('Updated form with new file ID:', uploadedFile.id);
-
-        // Upload file to S3
-        console.log('Uploading file to S3...');
-        try {
-          const response = await fetch(presignedUrl, {
-            method: 'PUT',
-            body: file,
-            headers: {
-              'Content-Type': file.type
-            }
-          });
-          console.log('S3 upload response:', response);
-
-          if (!response.ok) {
-            console.error('S3 upload failed with status:', response.status);
-            console.error(
-              'S3 upload error details:',
-              await response.text().catch(() => 'No response text')
-            );
-            throw new Error(
-              `Failed to upload file: ${response.status} ${response.statusText}`
-            );
-          }
-
-          console.log('S3 upload successful!');
-        } catch (uploadError) {
-          console.error('Error during S3 upload:', uploadError);
-          // Even if S3 upload fails, we'll keep the file ID in the form
-          // This way, the backend can handle the file that was registered but not uploaded
-          console.warn('Keeping file ID in form despite upload failure');
-        }
-
-        // Update progress
-        setUploadProgress((prev) => ({
-          ...prev,
-          [file.name]: 100
-        }));
-        console.log(`Set upload progress for ${file.name} to 100%`);
-      } catch (error) {
-        console.error('Error uploading file:', error);
-        // Update progress for error
-        setUploadProgress((prev) => ({
-          ...prev,
-          [file.name]: 0
-        }));
-      }
-    }
-  };
-
-  const handleDeleteImage = (fileId: string) => {
-    // Remove from form values
-    const currentFileIds = form.getValues('store_image_file_ids') || [];
-    const updatedFileIds = currentFileIds.filter((id) => id !== fileId);
-    form.setValue('store_image_file_ids', updatedFileIds);
-
-    // Remove from preview map
-    const updatedFilePreviewMap = { ...filePreviewMap };
-    delete updatedFilePreviewMap[fileId];
-    setFilePreviewMap(updatedFilePreviewMap);
-
-    // If it was a local object URL, revoke it to free up memory
-    if (filePreviewMap[fileId] && filePreviewMap[fileId].startsWith('blob:')) {
-      URL.revokeObjectURL(filePreviewMap[fileId]);
-    }
-  };
 
   const initialValues: StoreFormValues = selectedStore
     ? {
@@ -315,6 +89,25 @@ export default function StoreInfoSection({
     mode: 'onChange',
     defaultValues: initialValues
   });
+
+  const {
+    uploadProgress,
+    filePreviewMap,
+    handleUpload,
+    handleDeleteImage,
+    loadPreviewUrls
+  } = useImageUpload({
+    form,
+    fieldName: 'store_image_file_ids'
+  });
+
+  // selectedStore?.store_image_file_ids가 변경될 때만 실행되도록 수정
+  useEffect(() => {
+    const fileIds = selectedStore?.store_image_file_ids;
+    if (fileIds && fileIds.length > 0) {
+      loadPreviewUrls(fileIds);
+    }
+  }, [selectedStore?.store_image_file_ids]); // loadPreviewUrls 제거
 
   const handleComplete = useCallback(
     (data: any) => {
@@ -549,9 +342,6 @@ export default function StoreInfoSection({
                         <div className='grid grid-cols-3 gap-4'>
                           {field.value.map((fileId) => {
                             const previewUrl = filePreviewMap[fileId];
-                            console.log(
-                              `Rendering image for ${fileId}, URL: ${previewUrl}`
-                            );
 
                             if (!previewUrl) {
                               return (
@@ -592,17 +382,9 @@ export default function StoreInfoSection({
                                   fill
                                   className='rounded-lg object-cover'
                                   onError={(e) => {
-                                    console.error(
-                                      `Failed to load image from URL: ${previewUrl}`
-                                    );
                                     // Set a fallback image or placeholder
                                     (e.target as HTMLImageElement).src =
                                       'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23f0f0f0"/%3E%3Ctext x="50" y="50" font-family="Arial" font-size="12" text-anchor="middle" dominant-baseline="middle" fill="%23999"%3EImage Error%3C/text%3E%3C/svg%3E';
-                                  }}
-                                  onLoad={() => {
-                                    console.log(
-                                      `Image for ${fileId} loaded successfully`
-                                    );
                                   }}
                                 />
                                 {!readOnly && (
