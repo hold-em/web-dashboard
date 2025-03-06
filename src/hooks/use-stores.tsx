@@ -40,7 +40,7 @@ export const useStores = () => {
     onSuccess: () => {
       toast.success('매장이 성공적으로 생성되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['stores'] });
-      router.back();
+      router.push('/dashboard/store-management');
     }
   });
 
@@ -68,7 +68,7 @@ export const useStores = () => {
     onSuccess: () => {
       toast.success('매장 정보가 성공적으로 수정되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['stores'] });
-      router.back();
+      router.push('/dashboard/store-management');
     }
   });
 
