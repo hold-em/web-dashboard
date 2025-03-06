@@ -74,6 +74,13 @@ const adminNavItems: NavItem[] = [
     'settings',
     ['8', '8'],
     []
+  ),
+  createNavItem(
+    '관리자 관리',
+    '/dashboard/admin-management',
+    'settings',
+    ['9', '9'],
+    []
   )
 ];
 
@@ -81,7 +88,7 @@ const adminNavItems: NavItem[] = [
 export const getNavItems = (role?: string): NavItem[] => {
   // If the user is a system admin, include admin-specific items
   if (role === 'SYSTEM_ADMIN') {
-    return [...baseNavItems, ...adminNavItems];
+    return [...adminNavItems];
   }
 
   // Otherwise, return only the base items

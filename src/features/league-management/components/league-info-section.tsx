@@ -18,7 +18,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLeagues } from '@/hooks/use-leagues';
 import { leagueSchema, type LeagueFormValues } from '../utils/form-schema';
-
+import { useRouter } from 'next/navigation';
 interface LeagueInfoSectionProps {
   selectedLeague: LeagueRestResponse | null;
   pageState: PageState;
@@ -29,6 +29,7 @@ export default function LeagueInfoSection({
   pageState
 }: LeagueInfoSectionProps) {
   const { createLeague, updateLeague, isCreating, isUpdating } = useLeagues();
+  const router = useRouter();
   const formatDate = (date: unknown) => {
     if (!date || typeof date !== 'string') return '-';
     return new Date(date).toLocaleString();
@@ -70,6 +71,8 @@ export default function LeagueInfoSection({
         }
       } catch (error) {
         console.error('Failed to save league:', error);
+      } finally {
+        router.back();
       }
     },
     [pageState, selectedLeague, createLeague, updateLeague]
