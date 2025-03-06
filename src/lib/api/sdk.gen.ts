@@ -32,8 +32,12 @@ import type {
   GetGameStructureTemplateResponse,
   UpdateGameStructureTemplateData,
   UpdateGameStructureTemplateResponse,
+  DeleteLeagueData,
+  DeleteLeagueResponse,
   UpdateLeagueData,
   UpdateLeagueResponse,
+  DeleteGameTypeData,
+  DeleteGameTypeResponse,
   UpdateGameTypeData,
   UpdateGameTypeResponse,
   UseVouchersData,
@@ -501,6 +505,25 @@ export const updateGameStructureTemplate = <
   });
 };
 
+export const deleteLeague = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteLeagueData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).delete<
+    DeleteLeagueResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/admin/leagues/{id}',
+    ...options
+  });
+};
+
 export const updateLeague = <ThrowOnError extends boolean = false>(
   options: Options<UpdateLeagueData, ThrowOnError>
 ) => {
@@ -521,6 +544,25 @@ export const updateLeague = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options?.headers
     }
+  });
+};
+
+export const deleteGameType = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteGameTypeData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).delete<
+    DeleteGameTypeResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/admin/games/game-types/{gameTypeId}',
+    ...options
   });
 };
 

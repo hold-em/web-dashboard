@@ -31,11 +31,11 @@ export const authConfig = {
             return null;
           }
 
-          const { data: userData } = (await getMe({
+          const { data: userData } = await getMe({
             headers: {
               Authorization: `Bearer ${data.data.access_token}`
             }
-          })) as any;
+          });
 
           return {
             id: data.data.user_id,

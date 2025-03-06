@@ -13,6 +13,7 @@ export type UserUpdateRestRequest = {
 export type UserResponse = {
   id: string;
   type: 'NORMAL' | 'TEMP';
+  role: 'CUSTOMER' | 'STORE_MANAGER' | 'SYSTEM_ADMIN';
   username?: string;
   name: string;
   nickname?: string;
@@ -22,7 +23,11 @@ export type UserResponse = {
   birth: string;
   gender: 'FEMALE' | 'MALE';
   passport_number?: string;
+  profile_image_file_id?: string;
   agreed_to_consent?: boolean;
+  enable_push_notification?: boolean;
+  store_id?: number;
+  created_by?: string;
 };
 
 export type UpdateStoreRestRequest = {
@@ -1793,6 +1798,25 @@ export type UpdateGameStructureTemplateResponses = {
 export type UpdateGameStructureTemplateResponse =
   UpdateGameStructureTemplateResponses[keyof UpdateGameStructureTemplateResponses];
 
+export type DeleteLeagueData = {
+  body?: never;
+  path: {
+    id: number;
+  };
+  query?: never;
+  url: '/admin/leagues/{id}';
+};
+
+export type DeleteLeagueResponses = {
+  /**
+   * OK
+   */
+  200: RestResponseString;
+};
+
+export type DeleteLeagueResponse =
+  DeleteLeagueResponses[keyof DeleteLeagueResponses];
+
 export type UpdateLeagueData = {
   body: UpdateLeagueRestRequest;
   path: {
@@ -1811,6 +1835,25 @@ export type UpdateLeagueResponses = {
 
 export type UpdateLeagueResponse =
   UpdateLeagueResponses[keyof UpdateLeagueResponses];
+
+export type DeleteGameTypeData = {
+  body?: never;
+  path: {
+    gameTypeId: number;
+  };
+  query?: never;
+  url: '/admin/games/game-types/{gameTypeId}';
+};
+
+export type DeleteGameTypeResponses = {
+  /**
+   * OK
+   */
+  200: RestResponseString;
+};
+
+export type DeleteGameTypeResponse =
+  DeleteGameTypeResponses[keyof DeleteGameTypeResponses];
 
 export type UpdateGameTypeData = {
   body: UpdateGameTypeRestRequest;
