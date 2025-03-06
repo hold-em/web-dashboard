@@ -1,71 +1,70 @@
 'use client';
-import { getNavItems, navItems } from '@/constants/data';
+import { navItems } from '@/constants/data';
 import {
   KBarAnimator,
   KBarPortal,
   KBarPositioner,
   KBarProvider,
-  KBarSearch
+  KBarSearch,
+  useRegisterActions
 } from 'kbar';
 import { useRouter } from 'next/navigation';
 import { useMemo } from 'react';
 import RenderResults from './render-result';
 import useThemeSwitching from './use-theme-switching';
-import { useSession } from 'next-auth/react';
 
 export default function KBar({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const { data: session } = useSession();
-  const navigateTo = (url: string) => {
-    router.push(url);
-  };
-
-  const navigationItems = getNavItems(session?.user?.role);
-
-  // These action are for the navigation
-  const actions = useMemo(
-    () =>
-      navigationItems.flatMap((navItem) => {
-        // Only include base action if the navItem has a real URL and is not just a container
-        const baseAction =
-          navItem.url !== '#'
-            ? {
-                id: `${navItem.title.toLowerCase()}Action`,
-                name: navItem.title,
-                shortcut: navItem.shortcut,
-                keywords: navItem.title.toLowerCase(),
-                section: 'Navigation',
-                subtitle: `Go to ${navItem.title}`,
-                perform: () => navigateTo(navItem.url)
-              }
-            : null;
-
-        // Map child items into actions
-        const childActions =
-          navItem.items?.map((childItem) => ({
-            id: `${childItem.title.toLowerCase()}Action`,
-            name: childItem.title,
-            shortcut: childItem.shortcut,
-            keywords: childItem.title.toLowerCase(),
-            section: navItem.title,
-            subtitle: `Go to ${childItem.title}`,
-            perform: () => navigateTo(childItem.url)
-          })) ?? [];
-
-        // Return only valid actions (ignoring null base actions for containers)
-        return baseAction ? [baseAction, ...childActions] : childActions;
-      }),
-    []
-  );
-
   return (
-    <KBarProvider actions={actions}>
+    <KBarProvider>
       <KBarComponent>{children}</KBarComponent>
     </KBarProvider>
   );
 }
+
 const KBarComponent = ({ children }: { children: React.ReactNode }) => {
-  useThemeSwitching();
+  const router = useRouter();
+
+  // 네비게이션 함수
+  const navigateTo = (url: string) => {
+    router.push(url);
+  };
+
+  // 액션 생성
+  const actions = useMemo(() => {
+    return navItems.flatMap((navItem) => {
+      // Only include base action if the navItem has a real URL and is not just a container
+      const baseAction =
+        navItem.url !== '#'
+          ? {
+              id: `${navItem.title.toLowerCase()}Action`,
+              name: navItem.title,
+              shortcut: navItem.shortcut,
+              keywords: navItem.title.toLowerCase(),
+              section: 'Navigation',
+              subtitle: `Go to ${navItem.title}`,
+              perform: () => navigateTo(navItem.url)
+            }
+          : null;
+
+      // Map child items into actions
+      const childActions =
+        navItem.items?.map((childItem) => ({
+          id: `${childItem.title.toLowerCase()}Action`,
+          name: childItem.title,
+          shortcut: childItem.shortcut,
+          keywords: childItem.title.toLowerCase(),
+          section: navItem.title,
+          subtitle: `Go to ${childItem.title}`,
+          perform: () => navigateTo(childItem.url)
+        })) ?? [];
+
+      // Return only valid actions (ignoring null base actions for containers)
+      return baseAction ? [baseAction, ...childActions] : childActions;
+    });
+  }, [navigateTo]);
+
+  // 액션 등록
+  useRegisterActions(actions);
 
   return (
     <>

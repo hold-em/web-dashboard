@@ -138,9 +138,11 @@ export default function StoreInfoSection({
 
   const onSubmit = useCallback(
     (data: StoreFormValues) => {
+      console.log('pageState', pageState);
       if (pageState === 'create') {
         createStore(data);
       } else if (pageState === 'update' && selectedStore) {
+        console.log('🚀 ~ onSubmit ~ data:', data);
         updateStore({
           storeId: Number(selectedStore.id),
           ...data
