@@ -69,17 +69,24 @@ const baseNavItems: NavItem[] = [
 // Admin-only navigation items
 const adminNavItems: NavItem[] = [
   createNavItem(
+    '게임 타입 관리',
+    '/dashboard/game-type-management',
+    'settings',
+    ['1', '1'],
+    []
+  ),
+  createNavItem(
     '리그 관리',
     '/dashboard/league-management',
     'settings',
-    ['1', '1'],
+    ['2', '2'],
     []
   ),
   createNavItem(
     '관리자 관리',
     '/dashboard/admin-management',
     'settings',
-    ['2', '2'],
+    ['3', '3'],
     []
   )
 ];

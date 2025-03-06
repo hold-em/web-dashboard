@@ -42,11 +42,6 @@ export default function GameListSection({
   const columns = React.useMemo<ColumnDef<GameRestResponse>[]>(
     () => [
       {
-        accessorKey: 'id',
-        header: '게임 ID',
-        cell: ({ row }) => <div>{row.getValue('id')}</div>
-      },
-      {
         accessorKey: 'mode',
         header: '게임 모드',
         cell: ({ row }) => <div>{row.getValue('mode')}</div>
