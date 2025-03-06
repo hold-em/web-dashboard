@@ -55,6 +55,12 @@ export default function AuthHandler({
     };
   }, [session, router]);
 
+  useEffect(() => {
+    if (session === null) {
+      router.push('/');
+    }
+  }, [session]);
+
   if (!session) {
     return <>{children}</>;
   }

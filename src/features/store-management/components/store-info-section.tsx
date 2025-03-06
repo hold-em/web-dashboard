@@ -327,17 +327,6 @@ export default function StoreInfoSection({
                         maxSize={1024 * 1024 * 5} // 5MB
                       />
 
-                      {/* Debug info */}
-                      <div className='mb-2 text-xs text-gray-500'>
-                        <p>
-                          File IDs in form: {field.value?.join(', ') || 'None'}
-                        </p>
-                        <p>
-                          Preview URLs available:{' '}
-                          {Object.keys(filePreviewMap).length}
-                        </p>
-                      </div>
-
                       {field.value && field.value.length > 0 ? (
                         <div className='grid grid-cols-3 gap-4'>
                           {field.value.map((fileId) => {
