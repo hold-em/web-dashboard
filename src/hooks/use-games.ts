@@ -40,10 +40,14 @@ export function useGames() {
         body: data,
         path: { storeId: selectedStore?.id ?? 0 }
       });
+      console.log('🚀 ~ mutationFn: ~ response:', response);
       return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['games'] });
+    },
+    onError: (error) => {
+      console.error(error);
     }
   });
 

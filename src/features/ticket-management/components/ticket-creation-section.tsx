@@ -54,7 +54,7 @@ export default function TicketCreationgSection({
 
   return (
     <Section>
-      <SectionTitle>결제 추가</SectionTitle>
+      <SectionTitle>이용권 생성</SectionTitle>
       <SectionContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
