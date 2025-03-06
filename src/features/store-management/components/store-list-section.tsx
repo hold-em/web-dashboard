@@ -23,7 +23,9 @@ import {
 import TablePagination from '@/components/table-pagination';
 import { PAGE_SIZE } from '@/constants/common';
 import { PageState } from './store-management-page';
-import { StoreRestResponse } from '@/lib/api';
+import { StoreRestResponse, LeagueRestResponse } from '@/lib/api';
+import { useLeagues } from '@/hooks/use-leagues';
+
 interface StoreListSectionProps {
   stores: StoreRestResponse[];
   selectStore: (store: StoreRestResponse, pageState: PageState) => void;
@@ -36,6 +38,23 @@ export default function StoreListSection({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({ created_at: false });
 
+  const { leagues, isLoading: isLoadingLeagues } = useLeagues();
+
+  // Function to get league name by ID
+  const getLeagueName = React.useCallback(
+    (leagueId: number) => {
+      if (!leagues || isLoadingLeagues) return '로딩 중...';
+
+      // Check if leagues.data exists and is an array
+      const leaguesList = leagues.data || [];
+      const league = leaguesList.find(
+        (league: LeagueRestResponse) => league.id === leagueId
+      );
+      return league ? league.name : '알 수 없음';
+    },
+    [leagues, isLoadingLeagues]
+  );
+
   const columns = React.useMemo<ColumnDef<StoreRestResponse>[]>(
     () => [
       {
@@ -44,24 +63,20 @@ export default function StoreListSection({
         cell: ({ row }) => <div>{row.getValue('name')}</div>
       },
       {
-        accessorKey: 'phone',
+        accessorKey: 'phone_number',
         header: '전화번호',
-        cell: ({ row }) => <div>{row.getValue('phone')}</div>
+        cell: ({ row }) => <div>{row.getValue('phone_number')}</div>
       },
       {
         accessorKey: 'address',
         header: '주소',
         cell: ({ row }) => <div>{row.getValue('address')}</div>
       },
+
       {
-        accessorKey: 'status',
-        header: '상태',
-        cell: ({ row }) => <div>{row.getValue('status')}</div>
-      },
-      {
-        accessorKey: 'league',
+        accessorKey: 'league_id',
         header: '리그',
-        cell: ({ row }) => <div>{row.getValue('league')}</div>
+        cell: ({ row }) => <div>{getLeagueName(row.getValue('league_id'))}</div>
       },
       {
         accessorKey: 'created_at',
@@ -94,7 +109,7 @@ export default function StoreListSection({
         )
       }
     ],
-    [selectStore]
+    [selectStore, getLeagueName]
   );
 
   const table = useReactTable({

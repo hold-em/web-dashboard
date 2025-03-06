@@ -229,14 +229,14 @@ export function FileUploader(props: FileUploaderProps) {
                 </div>
                 <div className='space-y-px'>
                   <p className='font-medium text-muted-foreground'>
-                    Drag {`'n'`} drop files here, or click to select files
+                    파일을 드래그 앤 드랍하거나 클릭하여 파일을 선택하세요
                   </p>
                   <p className='text-sm text-muted-foreground/70'>
-                    You can upload
+                    최대 {maxFiles}개의 파일을 업로드할 수 있습니다.
                     {maxFiles > 1
                       ? ` ${maxFiles === Infinity ? 'multiple' : maxFiles}
                       files (up to ${formatBytes(maxSize)} each)`
-                      : ` a file with ${formatBytes(maxSize)}`}
+                      : ` a file with ${formatBytes(maxSize)}`}{' '}
                   </p>
                 </div>
               </div>
