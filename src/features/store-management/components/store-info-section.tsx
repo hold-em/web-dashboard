@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 import { Section, SectionTitle, SectionContent } from '@/components/section';
 import {
   FormLabel,
@@ -27,6 +27,9 @@ import { PageState } from './store-management-page';
 import { useStores } from '@/hooks/use-stores';
 import { StoreRestResponse } from '@/lib/api';
 import { useDaumPostcodePopup } from 'react-daum-postcode';
+import { FileUploader } from '@/components/file-uploader';
+import { getPresignedUploadUrl, getPresignedGetUrl } from '@/lib/api/sdk.gen';
+import Image from 'next/image';
 
 const facilityTypeMap = {
   PARKING_LOT: '주차 가능',
@@ -49,6 +52,81 @@ export default function StoreInfoSection({
 }: StoreInfoSectionProps) {
   const { createStore, updateStore } = useStores();
   const open = useDaumPostcodePopup();
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>(
+    {}
+  );
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+
+  useEffect(() => {
+    const loadPreviewUrls = async () => {
+      if (selectedStore?.store_image_file_ids?.length) {
+        const urls = await Promise.all(
+          selectedStore.store_image_file_ids.map(async (fileId) => {
+            const response = await getPresignedGetUrl({
+              path: { fileId: String(fileId) }
+            });
+            return response.data?.data?.object_url || '';
+          })
+        );
+        setPreviewUrls(urls.filter(Boolean));
+      }
+    };
+
+    loadPreviewUrls();
+  }, [selectedStore?.store_image_file_ids]);
+
+  const handleUpload = async (files: File[]) => {
+    for (const file of files) {
+      try {
+        // Get presigned URL
+        const presignedResponse = await getPresignedUploadUrl({
+          query: {
+            filename: file.name
+          }
+        });
+
+        if (!presignedResponse.data?.data) {
+          throw new Error('Failed to get presigned URL');
+        }
+
+        const { upload_url: presignedUrl, file: uploadedFile } =
+          presignedResponse.data.data;
+
+        // Upload file to S3
+        const response = await fetch(presignedUrl, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload file');
+        }
+
+        // Update form value
+        const currentFileIds = form.getValues('store_image_file_ids') || [];
+        form.setValue('store_image_file_ids', [
+          ...currentFileIds,
+          String(uploadedFile.id)
+        ]);
+
+        // Update progress
+        setUploadProgress((prev) => ({
+          ...prev,
+          [file.name]: 100
+        }));
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        // Update progress for error
+        setUploadProgress((prev) => ({
+          ...prev,
+          [file.name]: 0
+        }));
+      }
+    }
+  };
 
   const initialValues: StoreFormValues = selectedStore
     ? {
@@ -285,6 +363,43 @@ export default function StoreInfoSection({
                 ))}
               </div>
             </FormItem>
+            <FormField
+              control={form.control}
+              name='store_image_file_ids'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>매장 이미지</FormLabel>
+                  <FormControl>
+                    <div className='space-y-4'>
+                      <FileUploader
+                        disabled={readOnly}
+                        onUpload={handleUpload}
+                        progresses={uploadProgress}
+                        maxFiles={5}
+                        multiple={true}
+                        accept={{ 'image/*': [] }}
+                        maxSize={1024 * 1024 * 5} // 5MB
+                      />
+                      {previewUrls.length > 0 && (
+                        <div className='grid grid-cols-3 gap-4'>
+                          {previewUrls.map((url, index) => (
+                            <div key={index} className='relative aspect-square'>
+                              <Image
+                                src={url}
+                                alt={`Store image ${index + 1}`}
+                                fill
+                                className='rounded-lg object-cover'
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             {!readOnly && (
               <Button type='submit'>
                 {pageState === 'create' ? '추가' : '수정'}

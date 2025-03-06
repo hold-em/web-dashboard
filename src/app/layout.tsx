@@ -5,6 +5,7 @@ import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { Lato } from 'next/font/google';
 import NextTopLoader from 'nextjs-toploader';
 import './globals.css';
+import AuthHandler from '@/components/layout/auth-handler';
 
 export const metadata: Metadata = {
   title: 'YAJASU',
@@ -28,8 +29,10 @@ export default async function RootLayout({
         <NextTopLoader showSpinner={false} />
         <NuqsAdapter>
           <Providers>
-            <Toaster />
-            {children}
+            <AuthHandler>
+              <Toaster />
+              {children}
+            </AuthHandler>
           </Providers>
         </NuqsAdapter>
       </body>

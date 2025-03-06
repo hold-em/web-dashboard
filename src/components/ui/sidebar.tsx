@@ -21,8 +21,6 @@ import {
 } from '@/components/ui/tooltip';
 import { DialogTitle } from './dialog';
 import { useEffect } from 'react';
-import { auth } from '@/lib/auth';
-import { useAuthClient } from '@/hooks/use-auth-client';
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -79,8 +77,6 @@ const SidebarProvider = React.forwardRef<
         console.log('Session:', session);
       }
     }, [session]);
-
-    useAuthClient();
 
     const isMobile = useIsMobile();
     const [openMobile, setOpenMobile] = React.useState(false);

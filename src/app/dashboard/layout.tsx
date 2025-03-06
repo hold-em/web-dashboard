@@ -5,8 +5,8 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Next Shadcn Dashboard Starter',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  title: '야자수 어드민 대시보드',
+  description: '야자수 어드민 대시보드'
 };
 
 export default async function DashboardLayout({
