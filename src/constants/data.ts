@@ -1,4 +1,5 @@
 import { NavItem } from 'types';
+import { Icons } from '@/components/icons';
 
 export type Product = {
   photo_url: string;
@@ -11,70 +12,84 @@ export type Product = {
   updated_at: string;
 };
 
-//Info: The following data is used for the sidebar navigation and Cmd K bar.
-export const navItems: NavItem[] = [
-  {
-    title: '대시보드',
-    url: '/dashboard/overview',
-    icon: 'house',
-    isActive: false,
-    shortcut: ['1', '1'],
-    items: []
-  },
-  {
-    title: '매장 관리',
-    url: '/dashboard/store-management',
-    icon: 'building',
-    isActive: false,
-    shortcut: ['2', '2']
-  },
-  {
-    title: '게임 관리',
-    url: '/dashboard/game-management',
-    icon: 'gamepad',
-    isActive: false,
-    shortcut: ['3', '3']
-  },
-  {
-    title: '테이블 관리',
-    url: '/dashboard/table-management',
-    icon: 'layoutDashboard',
-    isActive: false,
-    shortcut: ['4', '4'],
-    items: []
-  },
-  {
-    title: '고객 관리',
-    url: '/dashboard/customer-management',
-    icon: 'users',
-    isActive: false,
-    shortcut: ['5', '5']
-  },
-  {
-    title: '이용권 관리',
-    url: '/dashboard/ticket-management',
-    icon: 'ticket',
-    isActive: false,
-    shortcut: ['6', '6'],
-    items: []
-  },
-  {
-    title: '결제 관리',
-    url: '/dashboard/payment-management',
-    icon: 'creditCard',
-    isActive: false,
-    shortcut: ['7', '7'],
-    items: []
-  },
-  {
-    title: '리그 관리',
-    url: '/dashboard/league-management',
-    icon: 'settings',
-    isActive: false,
-    shortcut: ['8', '8'],
-    items: []
-  }
+// Function to create a navigation item with standard properties
+export const createNavItem = (
+  title: string,
+  url: string,
+  icon: keyof typeof Icons,
+  shortcut: [string, string],
+  items: NavItem[] = []
+): NavItem => ({
+  title,
+  url,
+  icon,
+  isActive: false,
+  shortcut,
+  items
+});
+
+// Base navigation items that are available to all users
+const baseNavItems: NavItem[] = [
+  createNavItem('대시보드', '/dashboard/overview', 'house', ['1', '1'], []),
+  createNavItem('매장 관리', '/dashboard/store-management', 'building', [
+    '2',
+    '2'
+  ]),
+  createNavItem('게임 관리', '/dashboard/game-management', 'gamepad', [
+    '3',
+    '3'
+  ]),
+  createNavItem(
+    '테이블 관리',
+    '/dashboard/table-management',
+    'layoutDashboard',
+    ['4', '4'],
+    []
+  ),
+  createNavItem('고객 관리', '/dashboard/customer-management', 'users', [
+    '5',
+    '5'
+  ]),
+  createNavItem(
+    '이용권 관리',
+    '/dashboard/ticket-management',
+    'ticket',
+    ['6', '6'],
+    []
+  ),
+  createNavItem(
+    '결제 관리',
+    '/dashboard/payment-management',
+    'creditCard',
+    ['7', '7'],
+    []
+  )
 ];
+
+// Admin-only navigation items
+const adminNavItems: NavItem[] = [
+  createNavItem(
+    '리그 관리',
+    '/dashboard/league-management',
+    'settings',
+    ['8', '8'],
+    []
+  )
+];
+
+// Function to get navigation items based on user role
+export const getNavItems = (role?: string): NavItem[] => {
+  // If the user is a system admin, include admin-specific items
+  if (role === 'SYSTEM_ADMIN') {
+    return [...baseNavItems, ...adminNavItems];
+  }
+
+  // Otherwise, return only the base items
+  return baseNavItems;
+};
+
+//Info: The following data is used for the sidebar navigation and Cmd K bar.
+export const navItems: NavItem[] = [...baseNavItems, ...adminNavItems];
 
 export interface SaleUser {
   id: number;

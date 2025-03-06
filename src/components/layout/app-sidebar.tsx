@@ -18,17 +18,23 @@ import {
   SidebarRail,
   useSidebar
 } from '@/components/ui/sidebar';
-import { navItems } from '@/constants/data';
+import { getNavItems } from '@/constants/data';
 import { ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
 import { Icons } from '../icons';
+import { useSession } from 'next-auth/react';
 
 export default function AppSidebar() {
   const pathname = usePathname();
   const { setOpenMobile } = useSidebar();
+  const { data: session } = useSession();
+  console.log('🚀 ~ AppSidebar ~ session:', session);
+
+  // Get navigation items based on user role
+  const navigationItems = getNavItems(session?.user?.role);
 
   return (
     <Sidebar collapsible='icon'>
@@ -48,7 +54,7 @@ export default function AppSidebar() {
       <SidebarContent className='overflow-x-hidden'>
         <SidebarGroup>
           <SidebarMenu>
-            {navItems.map((item) => {
+            {navigationItems.map((item) => {
               const Icon = item.icon ? Icons[item.icon] : Icons.logo;
               return item?.items && item?.items?.length > 0 ? (
                 <Collapsible

@@ -11,9 +11,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { getMe } from '@/lib/api/sdk.gen';
 import { signOut, useSession } from 'next-auth/react';
-import { useEffect } from 'react';
 export function UserNav() {
   const { data: session } = useSession();
 
@@ -21,18 +19,6 @@ export function UserNav() {
     signOut();
     window.location.href = '/';
   };
-
-  useEffect(() => {
-    const fetchMe = async () => {
-      try {
-        const { data: meData } = await getMe();
-        console.log('🚀 ~ fetchMe ~ meData:', meData);
-      } catch (error) {
-        console.error('Error fetching me:', error);
-      }
-    };
-    fetchMe();
-  }, [session]);
 
   if (session) {
     return (

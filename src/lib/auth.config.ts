@@ -1,6 +1,6 @@
 import type { NextAuthConfig } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { login } from './api/sdk.gen';
+import { getMe, login } from './api/sdk.gen';
 
 export const authConfig = {
   providers: [
@@ -31,12 +31,19 @@ export const authConfig = {
             return null;
           }
 
+          const { data: userData } = (await getMe({
+            headers: {
+              Authorization: `Bearer ${data.data.access_token}`
+            }
+          })) as any;
+
           return {
             id: data.data.user_id,
             name: creds.username,
             email: creds.username,
             accessToken: data.data.access_token || '',
-            refreshToken: data.data.refresh_token || ''
+            refreshToken: data.data.refresh_token || '',
+            role: userData?.role || ''
           };
         } catch (error) {
           console.error('Auth error:', error);
@@ -55,6 +62,9 @@ export const authConfig = {
         token.role = user.role;
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
+        token.name = user.name;
+        token.email = user.email;
+        token.role = user.role;
       }
       return token;
     },
@@ -64,6 +74,9 @@ export const authConfig = {
         session.user.role = token.role;
         session.user.accessToken = token.accessToken;
         session.user.refreshToken = token.refreshToken;
+        session.user.name = token.name;
+        session.user.email = token.email;
+        session.user.role = token.role;
       }
       return session;
     }
