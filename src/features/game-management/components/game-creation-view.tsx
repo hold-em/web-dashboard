@@ -32,10 +32,6 @@ export default function GameCreationView({
 }: GameCreationViewProps) {
   const { tables, isLoading } = useGameTables(selectedGame?.id);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <>
       <SectionTopToolbar>

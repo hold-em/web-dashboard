@@ -11,7 +11,6 @@ import { useStores } from '@/hooks/use-stores';
 import { useGameTypes } from '@/hooks/use-game-types';
 import type {
   GameRestResponse,
-  GameStructureTemplateRestResponse,
   StoreRestResponse,
   CreateGameRestRequest,
   UpdateGameRestRequest
@@ -31,12 +30,8 @@ export default function GameManagementPage() {
     updateGame: updateGameMutation
   } = useGames();
 
-  const {
-    templates: structures,
-    createTemplate: addStructure,
-    updateTemplate: updateStructure,
-    isLoading: isLoadingTemplates
-  } = useGameTemplates();
+  const { templates: structures, isLoading: isLoadingTemplates } =
+    useGameTemplates();
 
   const { stores, isLoading: isLoadingStores } = useStores();
   const { gameTypes, isLoading: isLoadingGameTypes } = useGameTypes();
@@ -102,28 +97,6 @@ export default function GameManagementPage() {
     goBack();
   };
 
-  const handleAddStructure = (structure: GameStructureTemplateRestResponse) => {
-    addStructure({ structures: structure.structures });
-  };
-
-  const handleUpdateStructure = (
-    structure: GameStructureTemplateRestResponse
-  ) => {
-    updateStructure({
-      id: Number(structure.id),
-      data: { structures: structure.structures }
-    });
-  };
-
-  if (
-    isLoadingGames ||
-    isLoadingTemplates ||
-    isLoadingStores ||
-    isLoadingGameTypes
-  ) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <PageContainer>
       {page === 'list' && (
@@ -134,14 +107,7 @@ export default function GameManagementPage() {
           goCreateForm={goCreateForm}
         />
       )}
-      {page === 'structure' && (
-        <StructureManagementView
-          structures={structures?.data || []}
-          goBack={goBack}
-          addStructure={handleAddStructure}
-          updateStructure={handleUpdateStructure}
-        />
-      )}
+      {page === 'structure' && <StructureManagementView goBack={goBack} />}
       {(page === 'create' || page === 'read' || page === 'update') && (
         <GameCreationView
           selectedGame={selectedGame?.data || null}
