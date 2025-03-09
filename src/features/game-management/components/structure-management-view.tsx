@@ -1,10 +1,6 @@
 'use client';
 
-import {
-  SectionTopToolbar,
-  SectionTopButtonArea,
-  BackButton
-} from '@/components/section';
+import { SectionTopToolbar, BackButton } from '@/components/section';
 import StructureListSection from './structure-list-section';
 
 interface StructureManagementViewProps {
@@ -19,6 +15,7 @@ export default function StructureManagementView({
       <SectionTopToolbar>
         <BackButton onClick={goBack}>게임 관리</BackButton>
       </SectionTopToolbar>
+
       <StructureListSection />
     </>
   );

@@ -57,12 +57,12 @@ export function useGameTemplates() {
         id,
         data
       }: {
-        id: number;
+        id: string;
         data: UpdateGameStructureTemplateRestRequest;
       }) => {
         const response = await updateGameStructureTemplate({
           body: data,
-          path: { gameStructureTemplateId: String(id) }
+          path: { gameStructureTemplateId: id }
         });
         return response.data;
       },
