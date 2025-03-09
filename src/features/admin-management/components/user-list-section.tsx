@@ -98,7 +98,9 @@ export default function UserListSection({
             <Button
               variant='secondary'
               size='sm'
-              onClick={() => selectUser(row.original, 'read')}
+              onClick={() => {
+                selectUser(row.original, 'read');
+              }}
             >
               상세정보
             </Button>
@@ -109,7 +111,7 @@ export default function UserListSection({
             >
               수정
             </Button> */}
-            {row.original.role !== 'ADMIN' &&
+            {row.original.role !== 'STORE_MANAGER' &&
               row.original.role !== 'SYSTEM_ADMIN' && (
                 <Button
                   variant='outline'

@@ -1,3 +1,4 @@
+// TODO: 이 컴포넌트는 사용하지 않는 것으로 보임
 'use client';
 import { useSession, signOut } from 'next-auth/react';
 import React, { useEffect } from 'react';
