@@ -114,7 +114,6 @@ export default function GameManagementPage() {
         <GameCreationView
           selectedGame={selectedGame?.data || null}
           structures={structures?.data || []}
-          stores={stores || []}
           gameTypes={gameTypes?.data || []}
           addGame={handleAddGame}
           updateGame={handleUpdateGame}

@@ -56,11 +56,11 @@ export default function GameTypeListSection({
         header: '게임 타입명',
         cell: ({ row }) => <div>{row.getValue('name')}</div>
       },
-      {
-        accessorKey: 'position',
-        header: '위치',
-        cell: ({ row }) => <div>{row.getValue('position')}</div>
-      },
+      // {
+      //   accessorKey: 'position',
+      //   header: '위치',
+      //   cell: ({ row }) => <div>{row.getValue('position')}</div>
+      // },
       {
         accessorKey: 'created_at',
         header: '생성일',

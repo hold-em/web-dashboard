@@ -3,8 +3,6 @@
 import {
   GameRestResponse,
   GameStructureTemplateRestResponse,
-  StoreRestResponse,
-  GameTableRestResponse,
   GameTypeRestResponse
 } from '@/lib/api/types.gen';
 import { SectionTopToolbar, BackButton } from '@/components/section';
@@ -14,7 +12,6 @@ import { useGameTables } from '@/hooks/use-game-tables';
 interface GameCreationViewProps {
   selectedGame: GameRestResponse | null;
   structures: GameStructureTemplateRestResponse[];
-  stores: StoreRestResponse[];
   gameTypes: GameTypeRestResponse[];
   addGame: (game: GameRestResponse) => void;
   updateGame: (game: GameRestResponse) => void;
@@ -24,7 +21,6 @@ interface GameCreationViewProps {
 export default function GameCreationView({
   selectedGame,
   structures,
-  stores,
   gameTypes,
   addGame,
   updateGame,
@@ -40,7 +36,6 @@ export default function GameCreationView({
       <GameCreationInfoSection
         initialData={selectedGame}
         structures={structures}
-        stores={stores}
         gameTypes={gameTypes}
         tables={tables?.data || []}
         addGame={addGame}

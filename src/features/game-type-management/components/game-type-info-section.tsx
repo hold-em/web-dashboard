@@ -125,7 +125,7 @@ export default function GameTypeInfoSection({
                   </FormItem>
                 )}
               />
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name='position'
                 render={({ field }) => (
@@ -143,7 +143,7 @@ export default function GameTypeInfoSection({
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
               {!readOnly && (
                 <Button type='submit' disabled={isLoading}>
                   {isLoading

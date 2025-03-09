@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Section, SectionTitle, SectionContent } from '@/components/section';
 import {
   Form,
@@ -38,18 +37,16 @@ import { ko } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import {
   GameTableRestResponse,
-  StoreRestResponse,
   GameStructureTemplateRestResponse,
   GameRestResponse,
   GameTypeRestResponse
 } from '@/lib/api';
-import { DayPicker } from 'react-day-picker';
+import { useSelectedStore } from '@/hooks/use-selected-store';
 
 interface GameCreationInfoSectionProps {
   initialData: GameRestResponse | null;
   structures: GameStructureTemplateRestResponse[];
   tables: GameTableRestResponse[];
-  stores: StoreRestResponse[];
   gameTypes: GameTypeRestResponse[];
   addGame: (game: GameRestResponse) => void;
   updateGame: (game: GameRestResponse) => void;
@@ -59,12 +56,12 @@ export default function GameCreationInfoSection({
   initialData,
   structures,
   tables,
-  stores,
   gameTypes,
   addGame,
   updateGame
 }: GameCreationInfoSectionProps) {
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  const { selectedStore } = useSelectedStore();
+
   const form = useForm<GameFormSchemaValues>({
     resolver: zodResolver(gameFormSchema),
     mode: 'onChange',
@@ -192,10 +189,7 @@ export default function GameCreationInfoSection({
             <FormItem>
               <FormLabel>매장</FormLabel>
               <FormControl>
-                <div className='text-sm text-muted-foreground'>
-                  {stores.find((store) => store.id === initialData?.store_id)
-                    ?.name || '현재 선택된 매장'}
-                </div>
+                <div className='text-lg font-bold'>{selectedStore?.name}</div>
               </FormControl>
             </FormItem>
             <FormField
@@ -206,7 +200,7 @@ export default function GameCreationInfoSection({
                 return (
                   <FormItem>
                     <FormLabel>시작 시간</FormLabel>
-                    <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                    <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
@@ -226,49 +220,67 @@ export default function GameCreationInfoSection({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className='w-auto p-0' align='start'>
-                        <DayPicker
-                          mode='single'
-                          selected={value}
-                          onSelect={(date) => {
-                            if (date) {
-                              const newDate = new Date(date);
-                              newDate.setHours(value.getHours());
-                              newDate.setMinutes(value.getMinutes());
-                              field.onChange(newDate);
-                            }
-                            setCalendarOpen(false);
-                          }}
-                          locale={ko}
-                          className='p-3'
-                        />
-                        <div className='border-t p-3'>
-                          <Select
-                            value={format(value, 'HH:mm')}
-                            onValueChange={(time) => {
-                              const [hours, minutes] = time
-                                .split(':')
-                                .map(Number);
-                              const newDate = new Date(value);
-                              newDate.setHours(hours);
-                              newDate.setMinutes(minutes);
-                              field.onChange(newDate);
+                        <div className='flex flex-col gap-0'>
+                          <Calendar
+                            mode='single'
+                            selected={value}
+                            onSelect={(date) => {
+                              if (date) {
+                                const newDate = new Date(date);
+                                newDate.setHours(value.getHours());
+                                newDate.setMinutes(value.getMinutes());
+                                field.onChange(newDate);
+                              }
                             }}
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder='시간 선택' />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {Array.from({ length: 24 }, (_, i) => {
-                                const hour = i;
-                                const timeStr = `${String(hour).padStart(2, '0')}:00`;
-                                return (
-                                  <SelectItem key={hour} value={timeStr}>
-                                    {timeStr}
+                            locale={ko}
+                            className='p-3'
+                          />
+                          <div className='flex gap-2 border-t p-3'>
+                            <Select
+                              value={format(value, 'HH')}
+                              onValueChange={(hour) => {
+                                const newDate = new Date(value);
+                                newDate.setHours(parseInt(hour));
+                                field.onChange(newDate);
+                              }}
+                            >
+                              <SelectTrigger className='w-[100px]'>
+                                <SelectValue placeholder='시' />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: 24 }, (_, i) => (
+                                  <SelectItem
+                                    key={i}
+                                    value={String(i).padStart(2, '0')}
+                                  >
+                                    {String(i).padStart(2, '0')}시
                                   </SelectItem>
-                                );
-                              })}
-                            </SelectContent>
-                          </Select>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <Select
+                              value={format(value, 'mm')}
+                              onValueChange={(minute) => {
+                                const newDate = new Date(value);
+                                newDate.setMinutes(parseInt(minute));
+                                field.onChange(newDate);
+                              }}
+                            >
+                              <SelectTrigger className='w-[100px]'>
+                                <SelectValue placeholder='분' />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {[0, 15, 30, 45].map((minute) => (
+                                  <SelectItem
+                                    key={minute}
+                                    value={String(minute).padStart(2, '0')}
+                                  >
+                                    {String(minute).padStart(2, '0')}분
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       </PopoverContent>
                     </Popover>
