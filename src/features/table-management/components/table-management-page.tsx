@@ -53,7 +53,7 @@ export default function TableManagementPage() {
   const [selectedGame, setSelectedGame] = useState<Game | undefined>(undefined);
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
   const lastDragOverUpdateRef = useRef(0);
-  const CAPACITY = 6;
+  const CAPACITY = 11;
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
@@ -258,10 +258,10 @@ export default function TableManagementPage() {
             </SelectContent>
           </Select>
         </div>
-        <div className='grid grid-cols-2 gap-4'>
-          <Section>
+        <div className='grid grid-cols-[300px_1fr] gap-4'>
+          <Section className='flex h-[calc(100vh-12rem)] flex-col'>
             <SectionTitle>고객 리스트</SectionTitle>
-            <SectionContent>
+            <SectionContent className='relative'>
               <UserList users={availableUsers} />
             </SectionContent>
           </Section>

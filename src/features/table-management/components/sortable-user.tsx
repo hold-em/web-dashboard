@@ -32,7 +32,7 @@ export default function SortableUser({
       {...attributes}
       className='cursor-move rounded border bg-white p-2'
     >
-      {user.name}
+      {user.name + '(' + user.phone.slice(9) + ')'}
     </div>
   );
 }

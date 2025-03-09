@@ -8,7 +8,7 @@ import SortableUser from './sortable-user';
 
 export default function UserList({ users }: { users: User[] }) {
   return (
-    <div className='flex flex-col gap-2' id='user-list'>
+    <div className='grid h-full grid-cols-2 gap-2' id='user-list'>
       <SortableContext
         items={users.map((u) => u.id)}
         strategy={verticalListSortingStrategy}
