@@ -1,23 +1,22 @@
-'use client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { signOut, useSession } from 'next-auth/react';
-export function UserNav() {
-  const { data: session } = useSession();
+import { signOut, auth } from '@/lib/auth';
 
-  const handleSignOut = () => {
-    signOut();
-    window.location.href = '/';
+export async function UserNav() {
+  const session = await auth();
+
+  const handleSignOut = async () => {
+    'use server';
+    await signOut();
   };
 
   if (session) {
@@ -46,7 +45,7 @@ export function UserNav() {
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuGroup>
+          {/* <DropdownMenuGroup>
             <DropdownMenuItem>
               Profile
               <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
@@ -60,7 +59,7 @@ export function UserNav() {
               <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
             </DropdownMenuItem>
             <DropdownMenuItem>New Team</DropdownMenuItem>
-          </DropdownMenuGroup>
+          </DropdownMenuGroup> */}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleSignOut}>
             Log out

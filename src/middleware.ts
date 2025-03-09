@@ -1,21 +1,33 @@
-// Protecting routes with next-auth
-// https://next-auth.js.org/configuration/nextjs#middleware
-// https://nextjs.org/docs/app/building-your-application/routing/middleware
+import { auth as authMiddleware } from '@/lib/auth';
 
-import NextAuth from 'next-auth';
-import { authConfig } from '@/lib/auth.config';
+export default authMiddleware(async (req) => {
+  const session = req.auth;
 
-export const { auth: middleware } = NextAuth(authConfig);
+  if (session) {
+    if (req.nextUrl.pathname === '/') {
+      return Response.redirect(new URL('/dashboard', req.url), 307);
+    }
+  }
 
-export default middleware((req) => {
-  if (!req.auth) {
-    const url = req.url.replace(req.nextUrl.pathname, '/');
-    return Response.redirect(url);
+  if (!session) {
+    if (req.nextUrl.pathname !== '/') {
+      return Response.redirect(new URL('/', req.url), 307);
+    }
+    return;
+  }
+
+  const isAdmin =
+    session.user.role === 'SYSTEM_ADMIN' ||
+    session.user.role === 'STORE_MANAGER';
+
+  if (!isAdmin) {
+    if (req.nextUrl.pathname !== '/') {
+      return Response.redirect(new URL('/', req.url), 307);
+    }
+    return;
   }
 });
 
-// 미들웨어 설정
 export const config = {
-  // 인증이 필요한 경로 설정
-  matcher: ['/dashboard/:path*']
+  matcher: ['/dashboard/:path*', '/']
 };
