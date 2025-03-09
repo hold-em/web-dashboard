@@ -2,6 +2,7 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { getMe, login } from './api/sdk.gen';
 
+// NextAuth v5에서는 update가 기본 export에 포함되지 않을 수 있음
 export const { auth, signIn, handlers, signOut } = NextAuth({
   providers: [
     CredentialsProvider({

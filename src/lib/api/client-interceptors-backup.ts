@@ -71,7 +71,6 @@ client.instance.interceptors.response.use(
 
     // 401 Unauthorized 발생 시 Refresh Token 사용
     if (error.response?.status === 401 && !originalRequest._retry) {
-      console.log('🚀 ~ error.response:', error.response?.data);
       originalRequest._retry = true; // 무한 루프 방지
 
       try {
@@ -93,14 +92,12 @@ client.instance.interceptors.response.use(
             refresh_token: session.user.refreshToken
           }
         });
-        console.log('🚀 ~ refreshResponse:', refreshResponse);
 
         if (!refreshResponse || !refreshResponse.data?.data?.access_token) {
           throw new Error('Failed to refresh token');
         }
 
         const newAccessToken = refreshResponse.data.data.access_token;
-        console.log('🚀 ~ newAccessToken:', newAccessToken);
 
         // ✅ 새로운 Access Token을 메모리에 캐시
         cachedAccessToken = newAccessToken;
@@ -108,7 +105,6 @@ client.instance.interceptors.response.use(
         // ✅ 새로운 Access Token을 Axios 요청에 적용
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
 
-        console.log('🚀 ~ originalRequest:', originalRequest);
         // ✅ 기존 요청 다시 실행 - 새로운 인스턴스로 재시도
         return client.instance(originalRequest);
       } catch (refreshError) {
