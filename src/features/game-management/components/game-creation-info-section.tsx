@@ -35,21 +35,28 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import dayjs from 'dayjs';
 import {
   GameTableRestResponse,
   GameStructureTemplateRestResponse,
   GameRestResponse,
-  GameTypeRestResponse
+  GameTypeRestResponse,
+  CreateGameRestRequest,
+  UpdateGameRestRequest
 } from '@/lib/api';
 import { useSelectedStore } from '@/hooks/use-selected-store';
+import { useState, useEffect } from 'react';
+import { GameItem } from '../types/game-structure';
+import { StructurePreview } from './structure-list-section/structure-preview';
 
 interface GameCreationInfoSectionProps {
   initialData: GameRestResponse | null;
   structures: GameStructureTemplateRestResponse[];
   tables: GameTableRestResponse[];
   gameTypes: GameTypeRestResponse[];
-  addGame: (game: GameRestResponse) => void;
-  updateGame: (game: GameRestResponse) => void;
+  addGame: (game: CreateGameRestRequest) => void;
+  updateGame: (game: UpdateGameRestRequest) => void;
+  isReadOnly?: boolean;
 }
 
 export default function GameCreationInfoSection({
@@ -58,9 +65,28 @@ export default function GameCreationInfoSection({
   tables,
   gameTypes,
   addGame,
-  updateGame
+  updateGame,
+  isReadOnly = false
 }: GameCreationInfoSectionProps) {
   const { selectedStore } = useSelectedStore();
+
+  // 초기 구조 템플릿 설정
+  const initialStructure = initialData
+    ? structures.find((s) => s.id === initialData.structure_template_id) ||
+      structures[0]
+    : structures[0];
+
+  const [selectedStructure, setSelectedStructure] = useState<{
+    id: string;
+    items: GameItem[];
+  } | null>(
+    initialStructure
+      ? {
+          id: initialStructure.id,
+          items: JSON.parse(initialStructure.structures).items
+        }
+      : null
+  );
 
   const form = useForm<GameFormSchemaValues>({
     resolver: zodResolver(gameFormSchema),
@@ -70,7 +96,7 @@ export default function GameCreationInfoSection({
           game_type_id: initialData.game_type_id,
           mode: initialData.mode,
           store_id: initialData.store_id,
-          scheduled_at: new Date(initialData.scheduled_at.value as string),
+          scheduled_at: new Date(initialData.scheduled_at),
           status: initialData.status,
           buy_in_amount: initialData.buy_in_amount,
           reg_close_level: initialData.reg_close_level,
@@ -83,53 +109,133 @@ export default function GameCreationInfoSection({
           prize: initialData.prize
         }
       : {
-          game_type_id: undefined,
+          game_type_id: gameTypes.find((type) => type.name === '홀덤')?.id,
           mode: 'TOURNAMENT',
-          store_id: undefined,
+          store_id: selectedStore?.id,
           scheduled_at: new Date(),
           status: 'WAITING',
-          buy_in_amount: undefined,
-          reg_close_level: undefined,
-          max_players: undefined,
-          early_chips: undefined,
-          starting_chips: undefined,
-          reentry_chips: undefined,
-          break_time: '',
-          structure_template_id: '',
+          buy_in_amount: 0,
+          reg_close_level: 0,
+          max_players: 0,
+          early_chips: 0,
+          starting_chips: 0,
+          reentry_chips: 0,
+          break_time: '0',
+          structure_template_id: structures[0]?.id?.toString() || '',
           prize: ''
         }
   });
 
-  const onSubmit: SubmitHandler<GameFormSchemaValues> = (data) => {
-    const newGame: GameRestResponse = {
-      id: initialData ? initialData.id : uuid(),
-      created_by: initialData ? initialData.created_by : '',
-      created_at: initialData
-        ? initialData.created_at
-        : { value: new Date().toISOString() },
-      updated_at: { value: new Date().toISOString() },
-      scheduled_at: { value: data.scheduled_at.toISOString() },
-      status: data.status,
-      game_type_id: data.game_type_id,
-      store_id: data.store_id,
-      mode: data.mode,
-      buy_in_amount: data.buy_in_amount,
-      reg_close_level: data.reg_close_level,
-      max_players: data.max_players,
-      early_chips: data.early_chips,
-      starting_chips: data.starting_chips,
-      reentry_chips: data.reentry_chips,
-      break_time: data.break_time,
-      structure_template_id: data.structure_template_id,
-      structures: initialData ? initialData.structures : '',
-      prize: data.prize
-    };
-
+  // initialData가 변경될 때 폼 값을 업데이트
+  useEffect(() => {
     if (initialData) {
-      updateGame(newGame);
-    } else {
-      addGame(newGame);
+      form.reset({
+        game_type_id: initialData.game_type_id,
+        mode: initialData.mode,
+        store_id: initialData.store_id,
+        scheduled_at: new Date(initialData.scheduled_at),
+        status: initialData.status,
+        buy_in_amount: initialData.buy_in_amount,
+        reg_close_level: initialData.reg_close_level,
+        max_players: initialData.max_players,
+        early_chips: initialData.early_chips,
+        starting_chips: initialData.starting_chips,
+        reentry_chips: initialData.reentry_chips,
+        break_time: initialData.break_time,
+        structure_template_id: initialData.structure_template_id,
+        prize: initialData.prize
+      });
+
+      // 선택된 구조 템플릿 업데이트
+      const selectedTemplate = structures.find(
+        (s) => s.id === initialData.structure_template_id
+      );
+      if (selectedTemplate) {
+        setSelectedStructure({
+          id: selectedTemplate.id,
+          items: JSON.parse(selectedTemplate.structures).items
+        });
+      }
     }
+  }, [initialData, form, structures]);
+
+  const onSubmit: SubmitHandler<GameFormSchemaValues> = async (data) => {
+    try {
+      if (!selectedStore?.id) {
+        console.error('Store is not selected');
+        return;
+      }
+
+      // 선택된 스트럭처 찾기
+      const selectedStructureTemplate = structures.find(
+        (s) => s.id === data.structure_template_id
+      );
+
+      if (!selectedStructureTemplate) {
+        console.error('Structure template not found');
+        return;
+      }
+
+      // 날짜 포맷팅 (밀리초와 Z 제거)
+      const formattedDate = dayjs(data.scheduled_at).format(
+        'YYYY-MM-DDTHH:mm:ss[Z]'
+      );
+
+      if (initialData) {
+        // 수정 시에는 UpdateGameRestRequest 타입에 맞춤
+        const updateRequest: UpdateGameRestRequest = {
+          game_type_id: data.game_type_id,
+          mode: data.mode,
+          buy_in_amount: data.buy_in_amount,
+          reg_close_level: data.reg_close_level || 0,
+          max_players: data.max_players,
+          early_chips: data.early_chips,
+          starting_chips: data.starting_chips,
+          reentry_chips: data.reentry_chips || 0,
+          break_time: data.break_time,
+          structure_template_id: data.structure_template_id,
+          structures: selectedStructureTemplate.structures,
+          scheduled_at: formattedDate,
+          prize: data.prize
+        };
+
+        updateGame(updateRequest);
+      } else {
+        // 새로 생성 시에는 CreateGameRestRequest 타입에 맞춤
+        const createRequest: CreateGameRestRequest = {
+          game_type_id: data.game_type_id,
+          mode: data.mode,
+          buy_in_amount: data.buy_in_amount,
+          reg_close_level: data.reg_close_level || 0,
+          max_players: data.max_players,
+          early_chips: data.early_chips,
+          starting_chips: data.starting_chips,
+          reentry_chips: data.reentry_chips || 0,
+          break_time: data.break_time,
+          structure_template_id: data.structure_template_id,
+          structures: selectedStructureTemplate.structures,
+          scheduled_at: formattedDate,
+          status: 'WAITING', // 생성 시에는 항상 '대기중'으로 설정
+          prize: data.prize
+        };
+
+        addGame(createRequest);
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+    }
+  };
+
+  const handleStructureChange = (structureId: string) => {
+    const structure = structures.find((s) => s.id === structureId);
+    if (structure) {
+      const structureData = JSON.parse(structure.structures);
+      setSelectedStructure({
+        id: structure.id,
+        items: structureData.items
+      });
+    }
+    return structureId;
   };
 
   return (
@@ -148,6 +254,7 @@ export default function GameCreationInfoSection({
                     <Select
                       value={value ? String(value) : ''}
                       onValueChange={(val) => onChange(Number(val))}
+                      disabled={isReadOnly}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder='게임 타입 선택' />
@@ -172,7 +279,11 @@ export default function GameCreationInfoSection({
                 <FormItem>
                   <FormLabel>게임 모드</FormLabel>
                   <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isReadOnly}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder='게임 모드 선택' />
                       </SelectTrigger>
@@ -201,7 +312,7 @@ export default function GameCreationInfoSection({
                   <FormItem>
                     <FormLabel>시작 시간</FormLabel>
                     <Popover>
-                      <PopoverTrigger asChild>
+                      <PopoverTrigger asChild disabled={isReadOnly}>
                         <FormControl>
                           <Button
                             variant='outline'
@@ -209,6 +320,7 @@ export default function GameCreationInfoSection({
                               'w-full pl-3 text-left font-normal',
                               !value && 'text-muted-foreground'
                             )}
+                            disabled={isReadOnly}
                           >
                             {value ? (
                               format(value, 'PPP HH:mm', { locale: ko })
@@ -243,6 +355,7 @@ export default function GameCreationInfoSection({
                                 newDate.setHours(parseInt(hour));
                                 field.onChange(newDate);
                               }}
+                              disabled={isReadOnly}
                             >
                               <SelectTrigger className='w-[100px]'>
                                 <SelectValue placeholder='시' />
@@ -265,6 +378,7 @@ export default function GameCreationInfoSection({
                                 newDate.setMinutes(parseInt(minute));
                                 field.onChange(newDate);
                               }}
+                              disabled={isReadOnly}
                             >
                               <SelectTrigger className='w-[100px]'>
                                 <SelectValue placeholder='분' />
@@ -289,102 +403,142 @@ export default function GameCreationInfoSection({
                 );
               }}
             />
-            <FormField
-              control={form.control}
-              name='status'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>상태</FormLabel>
-                  <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder='상태 선택' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='WAITING'>대기중</SelectItem>
-                        <SelectItem value='PLAYING'>진행중</SelectItem>
-                        <SelectItem value='FINISHED'>종료</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            {[
-              {
-                name: 'buy_in_amount',
-                label: '바이인',
-                placeholder: '바이인 금액'
-              },
-              {
-                name: 'reg_close_level',
-                label: '레지 마감 레벨',
-                placeholder: '레지 마감 레벨'
-              },
-              {
-                name: 'max_players',
-                label: '최대 플레이어 수',
-                placeholder: '최대 플레이어 수'
-              },
-              {
-                name: 'early_chips',
-                label: '얼리버드 칩',
-                placeholder: '얼리버드 칩'
-              },
-              {
-                name: 'starting_chips',
-                label: '시작 칩',
-                placeholder: '시작 칩'
-              },
-              {
-                name: 'reentry_chips',
-                label: '리엔트리 칩',
-                placeholder: '리엔트리 칩'
-              }
-            ].map(({ name, label, placeholder }) => (
+            {initialData && (
               <FormField
-                key={name}
                 control={form.control}
-                name={name as keyof GameFormSchemaValues}
+                name='status'
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel htmlFor={name}>{label}</FormLabel>
+                    <FormLabel>상태</FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={isReadOnly}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder='상태 선택' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='WAITING'>대기중</SelectItem>
+                          <SelectItem value='PLAYING'>진행중</SelectItem>
+                          <SelectItem value='FINISHED'>종료</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {!initialData && (
+              <FormItem>
+                <FormLabel>상태</FormLabel>
+                <FormControl>
+                  <div className='text-lg font-medium'>대기중</div>
+                </FormControl>
+              </FormItem>
+            )}
+            <div className='grid grid-cols-2 gap-4'>
+              {[
+                {
+                  name: 'buy_in_amount',
+                  label: '바이인',
+                  placeholder: '바이인 금액'
+                },
+                {
+                  name: 'reg_close_level',
+                  label: '레지 마감 레벨',
+                  placeholder: '레지 마감 레벨'
+                },
+                {
+                  name: 'max_players',
+                  label: '최대 플레이어 수',
+                  placeholder: '최대 플레이어 수'
+                },
+                {
+                  name: 'early_chips',
+                  label: '얼리버드 칩',
+                  placeholder: '얼리버드 칩'
+                },
+                {
+                  name: 'starting_chips',
+                  label: '시작 칩',
+                  placeholder: '시작 칩'
+                },
+                {
+                  name: 'reentry_chips',
+                  label: '리엔트리 칩',
+                  placeholder: '리엔트리 칩'
+                }
+              ].map(({ name, label, placeholder }) => (
+                <FormField
+                  key={name}
+                  control={form.control}
+                  name={name as keyof GameFormSchemaValues}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor={name}>{label}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          id={name}
+                          placeholder={placeholder}
+                          value={field.value ? String(field.value) : ''}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value
+                                ? Number(e.target.value)
+                                : undefined
+                            )
+                          }
+                          disabled={isReadOnly}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
+            <div className='grid grid-cols-2 gap-4'>
+              <FormField
+                control={form.control}
+                name='break_time'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor='break_time'>브레이크 타임</FormLabel>
                     <FormControl>
                       <Input
-                        type='number'
-                        id={name}
-                        placeholder={placeholder}
-                        value={field.value ? String(field.value) : ''}
-                        onChange={(e) =>
-                          field.onChange(
-                            e.target.value ? Number(e.target.value) : undefined
-                          )
-                        }
+                        id='break_time'
+                        placeholder='브레이크 타임'
+                        {...field}
+                        disabled={isReadOnly}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            ))}
-            <FormField
-              control={form.control}
-              name='break_time'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor='break_time'>브레이크 타임</FormLabel>
-                  <FormControl>
-                    <Input
-                      id='break_time'
-                      placeholder='브레이크 타임'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <FormField
+                control={form.control}
+                name='prize'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel htmlFor='prize'>PRIZE</FormLabel>
+                    <FormControl>
+                      <Input
+                        id='prize'
+                        placeholder='PRIZE'
+                        {...field}
+                        disabled={isReadOnly}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <FormField
               control={form.control}
               name='structure_template_id'
@@ -392,7 +546,14 @@ export default function GameCreationInfoSection({
                 <FormItem>
                   <FormLabel>스트럭처</FormLabel>
                   <FormControl>
-                    <Select value={field.value} onValueChange={field.onChange}>
+                    <Select
+                      value={field.value}
+                      onValueChange={(val) => {
+                        handleStructureChange(val);
+                        field.onChange(val);
+                      }}
+                      disabled={isReadOnly}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder='스트럭처 선택' />
                       </SelectTrigger>
@@ -414,23 +575,19 @@ export default function GameCreationInfoSection({
                     </Select>
                   </FormControl>
                   <FormMessage />
+                  {selectedStructure && (
+                    <div className='mt-4'>
+                      <StructurePreview items={selectedStructure.items} />
+                    </div>
+                  )}
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name='prize'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor='prize'>상금</FormLabel>
-                  <FormControl>
-                    <Input id='prize' placeholder='상금' {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type='submit'>게임 {initialData ? '수정' : '추가'}</Button>
+            {!isReadOnly && (
+              <Button type='submit'>
+                게임 {initialData ? '수정' : '추가'}
+              </Button>
+            )}
           </form>
         </Form>
       </SectionContent>

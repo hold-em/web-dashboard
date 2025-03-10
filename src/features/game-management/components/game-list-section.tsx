@@ -24,6 +24,7 @@ import TablePagination from '@/components/table-pagination';
 import { GameRestResponse } from '@/lib/api/types.gen';
 import { PAGE_SIZE } from '@/constants/common';
 import { PageState } from './game-management-page';
+import { useStores } from '@/hooks/use-stores';
 
 interface GameListSectionProps {
   games: GameRestResponse[];
@@ -34,6 +35,8 @@ export default function GameListSection({
   games,
   selectGame
 }: GameListSectionProps) {
+  const { stores } = useStores();
+
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
       created_at: false
@@ -50,6 +53,24 @@ export default function GameListSection({
         accessorKey: 'buy_in_amount',
         header: '바이인',
         cell: ({ row }) => <div>{row.getValue('buy_in_amount')}</div>
+      },
+      {
+        accessorKey: 'prize',
+        header: '상금',
+        cell: ({ row }) => (
+          <div>
+            {row.getValue('prize') ? `${row.getValue('prize')}원` : '-'}
+          </div>
+        )
+      },
+      {
+        accessorKey: 'store_id',
+        header: '개최 장소',
+        cell: ({ row }) => {
+          const storeId = row.getValue('store_id');
+          const store = stores?.find((s) => s.id === storeId);
+          return <div>{store ? store.name : `매장 ${storeId}`}</div>;
+        }
       },
       {
         accessorKey: 'max_players',
@@ -96,7 +117,7 @@ export default function GameListSection({
         )
       }
     ],
-    [selectGame]
+    [selectGame, stores]
   );
 
   const table = useReactTable({
@@ -115,6 +136,7 @@ export default function GameListSection({
       columnVisibility: { created_at: false }
     }
   });
+  console.log('🚀 ~ games:', games);
 
   return (
     <Section>

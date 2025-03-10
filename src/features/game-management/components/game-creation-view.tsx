@@ -1,21 +1,25 @@
 'use client';
 
 import {
+  CreateGameRestRequest,
   GameRestResponse,
   GameStructureTemplateRestResponse,
-  GameTypeRestResponse
+  GameTypeRestResponse,
+  UpdateGameRestRequest
 } from '@/lib/api/types.gen';
 import { SectionTopToolbar, BackButton } from '@/components/section';
 import GameCreationInfoSection from './game-creation-info-section';
 import { useGameTables } from '@/hooks/use-game-tables';
+import { PageState } from './game-management-page';
 
 interface GameCreationViewProps {
   selectedGame: GameRestResponse | null;
   structures: GameStructureTemplateRestResponse[];
   gameTypes: GameTypeRestResponse[];
-  addGame: (game: GameRestResponse) => void;
-  updateGame: (game: GameRestResponse) => void;
+  addGame: (game: CreateGameRestRequest) => void;
+  updateGame: (game: UpdateGameRestRequest) => void;
   goBack: () => void;
+  pageState: PageState;
 }
 
 export default function GameCreationView({
@@ -24,7 +28,8 @@ export default function GameCreationView({
   gameTypes,
   addGame,
   updateGame,
-  goBack
+  goBack,
+  pageState
 }: GameCreationViewProps) {
   const { tables, isLoading } = useGameTables(selectedGame?.id);
 
@@ -40,6 +45,7 @@ export default function GameCreationView({
         tables={tables?.data || []}
         addGame={addGame}
         updateGame={updateGame}
+        isReadOnly={pageState === 'read'}
       />
     </>
   );

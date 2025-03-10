@@ -17,19 +17,22 @@ import type {
 } from '@/lib/api/types.gen';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSelectedStore } from '@/hooks/use-selected-store';
+import { useState } from 'react';
+import React from 'react';
 
 export type PageState = 'list' | 'create' | 'read' | 'update' | 'structure';
 
 export default function GameManagementPage() {
   const { page, navigateTo } = usePageNavigation<PageState>('list');
   const queryClient = useQueryClient();
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const {
     games,
     isLoading: isLoadingGames,
     selectedGame,
     createGame,
     updateGame: updateGameMutation
-  } = useGames();
+  } = useGames(selectedGameId || undefined);
   const { selectedStore } = useSelectedStore();
 
   const { templates: structures, isLoading: isLoadingTemplates } =
@@ -38,8 +41,8 @@ export default function GameManagementPage() {
   const { stores, isLoading: isLoadingStores } = useStores();
   const { gameTypes, isLoading: isLoadingGameTypes } = useGameTypes();
 
-  const selectGame = async (game: GameRestResponse, newPage: PageState) => {
-    await queryClient.invalidateQueries({ queryKey: ['game', game.id] });
+  const selectGame = (game: GameRestResponse, newPage: PageState) => {
+    setSelectedGameId(game.id);
     navigateTo(newPage);
   };
 
@@ -55,46 +58,20 @@ export default function GameManagementPage() {
     navigateTo('create');
   };
 
-  const handleAddGame = (gameData: GameRestResponse) => {
-    const createGameData: CreateGameRestRequest = {
-      game_type_id: Number(gameData.game_type_id),
-      mode: gameData.mode,
-      buy_in_amount: gameData.buy_in_amount,
-      reg_close_level: gameData.reg_close_level || 0,
-      max_players: gameData.max_players,
-      early_chips: gameData.early_chips,
-      starting_chips: gameData.starting_chips,
-      reentry_chips: gameData.reentry_chips || 0,
-      break_time: gameData.break_time,
-      structure_template_id: String(gameData.structure_template_id),
-      structures: gameData.structures,
-      scheduled_at: gameData.scheduled_at,
-      status: gameData.status,
-      prize: gameData.prize
-    };
-    createGame(createGameData);
+  const handleAddGame = (gameData: CreateGameRestRequest) => {
+    createGame(gameData);
     goBack();
   };
 
-  const handleUpdateGame = (game: GameRestResponse) => {
-    const updateGameData: UpdateGameRestRequest = {
-      game_type_id: Number(game.game_type_id),
-      mode: game.mode,
-      buy_in_amount: game.buy_in_amount,
-      reg_close_level: game.reg_close_level || 0,
-      max_players: game.max_players,
-      early_chips: game.early_chips,
-      starting_chips: game.starting_chips,
-      reentry_chips: game.reentry_chips || 0,
-      break_time: game.break_time,
-      structure_template_id: String(game.structure_template_id),
-      structures: game.structures,
-      scheduled_at: game.scheduled_at,
-      prize: game.prize
-    };
+  const handleUpdateGame = (gameData: UpdateGameRestRequest) => {
+    if (!selectedGameId) {
+      console.error('No game selected for update');
+      return;
+    }
+
     updateGameMutation({
-      id: Number(game.id),
-      data: updateGameData
+      id: selectedGameId,
+      data: gameData
     });
     goBack();
   };
@@ -118,6 +95,7 @@ export default function GameManagementPage() {
           addGame={handleAddGame}
           updateGame={handleUpdateGame}
           goBack={goBack}
+          pageState={page}
         />
       )}
     </PageContainer>

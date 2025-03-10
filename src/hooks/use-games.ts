@@ -3,7 +3,7 @@ import { getGames, createGame, updateGame, getGame } from '@/lib/api';
 import type { CreateGameRestRequest, UpdateGameRestRequest } from '@/lib/api';
 import { useSelectedStore } from './use-selected-store';
 
-export function useGames() {
+export function useGames(gameId?: string) {
   const queryClient = useQueryClient();
   const { selectedStore } = useSelectedStore();
 
@@ -21,16 +21,15 @@ export function useGames() {
 
   // Get single game
   const { data: selectedGame, isLoading: isLoadingGame } = useQuery({
-    queryKey: ['game'],
-    queryFn: async ({ queryKey }) => {
-      const [_, gameId] = queryKey;
+    queryKey: ['game', gameId],
+    queryFn: async () => {
       if (!gameId) return null;
       const response = await getGame({
-        path: { gameId: String(gameId) }
+        path: { gameId }
       });
       return response.data;
     },
-    enabled: false
+    enabled: !!gameId
   });
 
   // Create game mutation
@@ -57,7 +56,7 @@ export function useGames() {
       id,
       data
     }: {
-      id: number;
+      id: string;
       data: UpdateGameRestRequest;
     }) => {
       const response = await updateGame({
