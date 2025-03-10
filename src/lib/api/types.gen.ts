@@ -53,9 +53,7 @@ export type RestResponseStoreRestResponse = {
   data?: StoreRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type StoreRestResponse = {
@@ -77,12 +75,8 @@ export type StoreRestResponse = {
     | 'SMOKING_ROOM'
     | 'VALET_PARKING'
   >;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type UpdatePartialPaymentRestRequest = {
@@ -110,12 +104,8 @@ export type PartialPaymentRestResponse = {
   price?: number;
   reference_id?: string;
   status: 'PENDING' | 'PAID' | 'CANCELED';
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type PaymentRestResponse = {
@@ -129,21 +119,15 @@ export type PaymentRestResponse = {
   partial_payments: Array<PartialPaymentRestResponse>;
   total_price: number;
   payment_status: 'PENDING' | 'PAID' | 'CANCELED';
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponsePaymentRestResponse = {
   data?: PaymentRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UpdatePayableItemRestRequest = {
@@ -157,21 +141,15 @@ export type PayableItemRestResponse = {
   created_by: string;
   name: string;
   position: number;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponsePayableItemRestResponse = {
   data?: PayableItemRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UpdateItemRestRequest = {
@@ -191,21 +169,15 @@ export type ItemRestResponse = {
   name: string;
   position: number;
   image_file_id?: string;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseItemRestResponse = {
   data?: ItemRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UpdateGameRestRequest = {
@@ -220,9 +192,7 @@ export type UpdateGameRestRequest = {
   break_time: string;
   structure_template_id: string;
   structures: string;
-  scheduled_at: {
-    [key: string]: unknown;
-  };
+  scheduled_at: string;
   prize: string;
 };
 
@@ -241,26 +211,18 @@ export type GameRestResponse = {
   break_time: string;
   structure_template_id: string;
   structures: string;
-  scheduled_at: {
-    [key: string]: unknown;
-  };
+  scheduled_at: string;
   status: 'WAITING' | 'PLAYING' | 'FINISHED';
   prize: string;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseGameRestResponse = {
   data?: GameRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UpdateGameTableRestRequest = {
@@ -274,21 +236,15 @@ export type GameTableRestResponse = {
   name: string;
   max_players: number;
   participants?: Array<TestUser>;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseGameTableRestResponse = {
   data?: GameTableRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type TestUser = {
@@ -308,21 +264,15 @@ export type GameStructureTemplateRestResponse = {
   id: string;
   created_by: string;
   structures: string;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseGameStructureTemplateRestResponse = {
   data?: GameStructureTemplateRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UpdateLeagueRestRequest = {
@@ -341,21 +291,15 @@ export type LeagueRestResponse = {
   payed_amount_point_weight: number;
   voucher_payed_amount_point_weight: number;
   visit_count_point_weight: number;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseLeagueRestResponse = {
   data?: LeagueRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UpdateGameTypeRestRequest = {
@@ -367,21 +311,15 @@ export type GameTypeRestResponse = {
   id: number;
   name: string;
   position: number;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseGameTypeRestResponse = {
   data?: GameTypeRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UseVouchersRestRequest = {
@@ -393,9 +331,7 @@ export type RestResponseVoucherUsageRestResponse = {
   data?: VoucherUsageRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type VoucherDto = {
@@ -411,12 +347,8 @@ export type VoucherDto = {
   voucher_usage_id?: string;
   used_store_id?: number;
   status: 'CREATED' | 'DISBURSED' | 'USED' | 'EXPIRED';
-  created_at?: {
-    [key: string]: unknown;
-  };
-  updated_at?: {
-    [key: string]: unknown;
-  };
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type VoucherUsageRestResponse = {
@@ -426,21 +358,15 @@ export type VoucherUsageRestResponse = {
   used_store_id: number;
   amount: number;
   vouchers?: Array<VoucherDto>;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseString = {
   data?: string;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type GameReservationRestResponse = {
@@ -448,21 +374,15 @@ export type GameReservationRestResponse = {
   game_id: string;
   user_id: string;
   status: 'RESERVED' | 'CANCELED';
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseGameReservationRestResponse = {
   data?: GameReservationRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type CreateOrderRestRequest = {
@@ -489,29 +409,21 @@ export type OrderRestResponse = {
   status: string;
   items: Array<OrderItemRestResponse>;
   voucher_usage_id?: string;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseOrderRestResponse = {
   data?: OrderRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseUnit = {
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type CreateVoucherTemplateRestRequest = {
@@ -527,30 +439,22 @@ export type ManagerVoucherTemplateRestResponse = {
   price: number;
   default_valid_days: number;
   created_voucher_count?: number;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseManagerVoucherTemplateRestResponse = {
   data?: ManagerVoucherTemplateRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListVoucherRestResponse = {
   data?: Array<VoucherRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type VoucherRestResponse = {
@@ -565,12 +469,8 @@ export type VoucherRestResponse = {
   voucher_usage_id?: string;
   used_store_id?: number;
   status: 'CREATED' | 'DISBURSED' | 'USED' | 'EXPIRED';
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type DisburseVoucherRestRequest = {
@@ -603,21 +503,15 @@ export type RestResponseStoreVisitRestResponse = {
   data?: StoreVisitRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type StoreVisitRestResponse = {
   store_id: number;
   date: string;
   user_id: string;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type CreateTempUserInStoreRestRequest = {
@@ -632,9 +526,7 @@ export type RestResponseUserRestResponse = {
   data?: UserRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UserRestResponse = {
@@ -656,12 +548,8 @@ export type UserRestResponse = {
   store_id?: number;
   created_by?: string;
   synced_to?: string;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type MergeTempUserRestRequest = {
@@ -672,9 +560,7 @@ export type RestResponseTempUserMergeRestResponse = {
   data?: TempUserMergeRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type TempUserMergeRestResponse = {
@@ -685,12 +571,8 @@ export type TempUserMergeRestResponse = {
   changed_payment_ids: Array<string>;
   changed_voucher_disbursement_ids: Array<string>;
   changed_point_award_ids: Array<string>;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type CreateGameRestRequest = {
@@ -708,9 +590,7 @@ export type CreateGameRestRequest = {
    * json string
    */
   structures: string;
-  scheduled_at: {
-    [key: string]: unknown;
-  };
+  scheduled_at: string;
   status: 'WAITING' | 'PLAYING' | 'FINISHED';
   prize: string;
 };
@@ -729,21 +609,15 @@ export type PointAwardRestResponse = {
   store_id: number;
   amount: number;
   event_type: string;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponsePointAwardRestResponse = {
   data?: PointAwardRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type CreatePartialPaymentRestRequest = {
@@ -785,21 +659,15 @@ export type NotificationRestResponse = {
   title: string;
   payload: string;
   status: 'CREATED' | 'PROCESSED' | 'FAILED';
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseNotificationRestResponse = {
   data?: NotificationRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type CreateGameTableRestRequest = {
@@ -844,9 +712,7 @@ export type RestResponseAuthTokensRestResponse = {
   data?: AuthTokensRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RegisterUserFromConnectingUserRestRequest = {
@@ -868,9 +734,7 @@ export type RestResponseBoolean = {
   data?: boolean;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type CreateLeagueRestRequest = {
@@ -892,21 +756,15 @@ export type FileDto = {
   filename: string;
   extension: string;
   status: 'WAITING' | 'COMPLETED' | 'DELETED';
-  created_at?: {
-    [key: string]: unknown;
-  };
-  updated_at?: {
-    [key: string]: unknown;
-  };
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type RestResponseSetFileUploadCompletedRestResponse = {
   data?: SetFileUploadCompletedRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type SetFileUploadCompletedRestResponse = {
@@ -921,30 +779,22 @@ export type CustomerVoucherTemplateRestResponse = {
   available_stores: Array<StoreRestResponse>;
   received_vouchers: Array<VoucherDto>;
   received_voucher_count: number;
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseListCustomerVoucherTemplateRestResponse = {
   data?: Array<CustomerVoucherTemplateRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListGameRestResponse = {
   data?: Array<GameRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type LinksRestResponse = {
@@ -961,9 +811,7 @@ export type RestResponseWithPaginationListUserRestResponse = {
   message: string;
   total_count: number;
   links: LinksRestResponse;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UserDto = {
@@ -1258,39 +1106,29 @@ export type UserDto = {
   store_id?: number;
   created_by?: string;
   synced_to?: string;
-  created_at?: {
-    [key: string]: unknown;
-  };
-  updated_at?: {
-    [key: string]: unknown;
-  };
+  created_at?: string;
+  updated_at?: string;
 };
 
 export type RestResponseListStoreRestResponse = {
   data?: Array<StoreRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListGameReservationRestResponse = {
   data?: Array<GameReservationRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListUserPointAggregateOfStoreRestResponse = {
   data?: Array<UserPointAggregateOfStoreRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UserPointAggregateOfStoreRestResponse = {
@@ -1305,9 +1143,7 @@ export type RestResponseWithPaginationListUserPointAggregateRestResponse = {
   message: string;
   total_count: number;
   links: LinksRestResponse;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type UserPointAggregateRestResponse = {
@@ -1321,18 +1157,14 @@ export type RestResponseUserPointAggregateRestResponse = {
   data?: UserPointAggregateRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListPointAwardRestResponse = {
   data?: Array<PointAwardRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseWithPaginationListOrderRestResponse = {
@@ -1341,18 +1173,14 @@ export type RestResponseWithPaginationListOrderRestResponse = {
   message: string;
   total_count: number;
   links: LinksRestResponse;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListItemRestResponse = {
   data?: Array<ItemRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type ConnectingUserRestResponse = {
@@ -1374,9 +1202,7 @@ export type RestResponseProcessOAuthCallbackRestResponse = {
   data?: ProcessOAuthCallbackRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type NotificationContentRestResponse = {
@@ -1385,12 +1211,8 @@ export type NotificationContentRestResponse = {
   title: string;
   payload: string;
   status: 'CREATED' | 'SENT' | 'NOT_SENT' | 'READ';
-  created_at: {
-    [key: string]: unknown;
-  };
-  updated_at: {
-    [key: string]: unknown;
-  };
+  created_at: string;
+  updated_at: string;
 };
 
 export type RestResponseWithPaginationListNotificationContentRestResponse = {
@@ -1399,36 +1221,28 @@ export type RestResponseWithPaginationListNotificationContentRestResponse = {
   message: string;
   total_count: number;
   links: LinksRestResponse;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseNotificationContentRestResponse = {
   data?: NotificationContentRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListManagerVoucherTemplateRestResponse = {
   data?: Array<ManagerVoucherTemplateRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListStoreVisitRestResponse = {
   data?: Array<StoreVisitRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseWithPaginationListPaymentRestResponse = {
@@ -1437,36 +1251,28 @@ export type RestResponseWithPaginationListPaymentRestResponse = {
   message: string;
   total_count: number;
   links: LinksRestResponse;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListPayableItemRestResponse = {
   data?: Array<PayableItemRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListGameStructureTemplateRestResponse = {
   data?: Array<GameStructureTemplateRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListLeagueRestResponse = {
   data?: Array<LeagueRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseWithPaginationListGameRestResponse = {
@@ -1475,27 +1281,21 @@ export type RestResponseWithPaginationListGameRestResponse = {
   message: string;
   total_count: number;
   links: LinksRestResponse;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListGameTableRestResponse = {
   data?: Array<GameTableRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type RestResponseListGameTypeRestResponse = {
   data?: Array<GameTypeRestResponse>;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type GetFilesRestResponse = {
@@ -1506,9 +1306,7 @@ export type RestResponseGetFilesRestResponse = {
   data?: GetFilesRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type GetFileRestResponse = {
@@ -1519,9 +1317,7 @@ export type RestResponseGetFileRestResponse = {
   data?: GetFileRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type GetPresignedObjectUrlRestResponse = {
@@ -1533,9 +1329,7 @@ export type RestResponseGetPresignedObjectUrlRestResponse = {
   data?: GetPresignedObjectUrlRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type GetPresignedUploadUrlRestResponse = {
@@ -1547,9 +1341,7 @@ export type RestResponseGetPresignedUploadUrlRestResponse = {
   data?: GetPresignedUploadUrlRestResponse;
   status: string;
   message: string;
-  timestamp: {
-    [key: string]: unknown;
-  };
+  timestamp: string;
 };
 
 export type FindByIdData = {
