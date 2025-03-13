@@ -6,7 +6,6 @@ import { SectionTopToolbar, SectionTopButtonArea } from '@/components/section';
 import GameListSection from './game-list-section';
 import { Button } from '@/components/ui/button';
 import { PageState } from './game-management-page';
-import TableStatusSection from './table-status-section';
 
 interface GameManagementViewProps {
   games: GameRestResponse[];

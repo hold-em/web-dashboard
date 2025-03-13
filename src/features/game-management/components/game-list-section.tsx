@@ -25,6 +25,7 @@ import { GameRestResponse } from '@/lib/api/types.gen';
 import { PAGE_SIZE } from '@/constants/common';
 import { PageState } from './game-management-page';
 import { useStores } from '@/hooks/use-stores';
+import { useRouter } from 'next/navigation';
 
 interface GameListSectionProps {
   games: GameRestResponse[];
@@ -36,6 +37,7 @@ export default function GameListSection({
   selectGame
 }: GameListSectionProps) {
   const { stores } = useStores();
+  const router = useRouter();
 
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({
@@ -113,6 +115,15 @@ export default function GameListSection({
             >
               수정
             </Button>
+            <Button
+              variant='secondary'
+              size='sm'
+              onClick={() => {
+                router.push(`/status-board/${row.original.id}`);
+              }}
+            >
+              현황판
+            </Button>
           </div>
         )
       }
@@ -136,7 +147,6 @@ export default function GameListSection({
       columnVisibility: { created_at: false }
     }
   });
-  console.log('🚀 ~ games:', games);
 
   return (
     <Section>
