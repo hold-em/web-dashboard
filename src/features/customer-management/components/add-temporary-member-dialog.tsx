@@ -28,49 +28,60 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-
+import { useTempUser } from '@/hooks/use-temp-user';
 import {
   temporaryMemberSchema,
   TemporaryMemberFormData
 } from '../utils/form-schema';
-import { User } from '@/mocks/users';
-import { v4 as uuidv4 } from 'uuid';
+import type { UserResponse } from '@/lib/api/types.gen';
 
-const genderItems = ['남성', '여성'] as const;
+const genderItems = [
+  { label: '남성', value: 'MALE' },
+  { label: '여성', value: 'FEMALE' }
+] as const;
 
 interface AddTemporaryMemberDialogProps {
-  addUser: (user: User) => void;
+  onSuccess?: () => void;
   onClose?: () => void;
 }
 
 export default function AddTemporaryMemberDialog({
-  addUser,
+  onSuccess,
   onClose
 }: AddTemporaryMemberDialogProps) {
   const [open, setOpen] = useState(false);
+  const { createTemporaryUser, isCreating } = useTempUser();
+
   const form = useForm<TemporaryMemberFormData>({
     resolver: zodResolver(temporaryMemberSchema),
     mode: 'onChange',
     defaultValues: {
       name: '',
-      nickname: '',
       phone: '',
-      gender: ''
+      email: '',
+      birth: '',
+      gender: undefined
     }
   });
 
   const onSubmit = (data: TemporaryMemberFormData) => {
-    const newUser: User = {
-      ...data,
-      id: uuidv4(),
-      member_status: '임시회원',
-      league_points: 0,
-      created_at: new Date().toISOString()
-    };
-    addUser(newUser);
-    setOpen(false);
-    form.reset();
-    if (onClose) onClose();
+    createTemporaryUser(
+      {
+        name: data.name,
+        phone_number: data.phone,
+        email_address: data.email,
+        birth: data.birth,
+        gender: data.gender
+      },
+      {
+        onSuccess: () => {
+          setOpen(false);
+          form.reset();
+          if (onSuccess) onSuccess();
+          if (onClose) onClose();
+        }
+      }
+    );
   };
 
   return (
@@ -99,12 +110,17 @@ export default function AddTemporaryMemberDialog({
             />
             <FormField
               control={form.control}
-              name='nickname'
+              name='email'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor='nickname'>닉네임</FormLabel>
+                  <FormLabel htmlFor='email'>이메일</FormLabel>
                   <FormControl>
-                    <Input id='nickname' placeholder='닉네임 입력' {...field} />
+                    <Input
+                      id='email'
+                      type='email'
+                      placeholder='이메일 주소 입력'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -142,6 +158,19 @@ export default function AddTemporaryMemberDialog({
             />
             <FormField
               control={form.control}
+              name='birth'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor='birth'>생년월일</FormLabel>
+                  <FormControl>
+                    <Input id='birth' type='date' {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name='gender'
               render={({ field: { value, onChange } }) => (
                 <FormItem>
@@ -153,8 +182,8 @@ export default function AddTemporaryMemberDialog({
                       </SelectTrigger>
                       <SelectContent>
                         {genderItems.map((item) => (
-                          <SelectItem key={item} value={item}>
-                            {item}
+                          <SelectItem key={item.value} value={item.value}>
+                            {item.label}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -165,7 +194,9 @@ export default function AddTemporaryMemberDialog({
               )}
             />
             <DialogFooter>
-              <Button type='submit'>추가</Button>
+              <Button type='submit' disabled={isCreating}>
+                {isCreating ? '추가 중...' : '추가'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
