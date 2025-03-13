@@ -571,6 +571,7 @@ export type TempUserMergeRestResponse = {
   changed_payment_ids: Array<string>;
   changed_voucher_disbursement_ids: Array<string>;
   changed_point_award_ids: Array<string>;
+  changed_game_user_ranking_ids: Array<number>;
   created_at: string;
   updated_at: string;
 };
@@ -593,31 +594,6 @@ export type CreateGameRestRequest = {
   scheduled_at: string;
   status: 'WAITING' | 'PLAYING' | 'FINISHED';
   prize: string;
-};
-
-export type AwardPointRestRequest = {
-  user_id: string;
-  store_id: number;
-  amount: number;
-  event_type: 'NORMAL';
-};
-
-export type PointAwardRestResponse = {
-  id: string;
-  created_by: string;
-  user_id: string;
-  store_id: number;
-  amount: number;
-  event_type: string;
-  created_at: string;
-  updated_at: string;
-};
-
-export type RestResponsePointAwardRestResponse = {
-  data?: PointAwardRestResponse;
-  status: string;
-  message: string;
-  timestamp: string;
 };
 
 export type CreatePartialPaymentRestRequest = {
@@ -677,6 +653,31 @@ export type CreateGameTableRestRequest = {
 
 export type ChangeGameTableParticipantsRestRequest = {
   participant_ids: Array<string>;
+};
+
+export type CreateGameUserRankingRestRequest = {
+  user_id: string;
+  ranking: number;
+  ranking_weight: number;
+};
+
+export type GameUserRankingRestResponse = {
+  id: number;
+  game_id: string;
+  user_id: string;
+  created_by: string;
+  original_user_id?: string;
+  ranking: number;
+  ranking_weight: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RestResponseListGameUserRankingRestResponse = {
+  data?: Array<GameUserRankingRestResponse>;
+  status: string;
+  message: string;
+  timestamp: string;
 };
 
 export type CreateGameStructureTemplateRestRequest = {
@@ -1160,6 +1161,18 @@ export type RestResponseUserPointAggregateRestResponse = {
   timestamp: string;
 };
 
+export type PointAwardRestResponse = {
+  id: string;
+  created_by: string;
+  user_id: string;
+  store_id: number;
+  amount: number;
+  event_type: string;
+  weight: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type RestResponseListPointAwardRestResponse = {
   data?: Array<PointAwardRestResponse>;
   status: string;
@@ -1291,6 +1304,15 @@ export type RestResponseListGameTableRestResponse = {
   timestamp: string;
 };
 
+export type RestResponseWithPaginationListGameUserRankingRestResponse = {
+  data?: Array<GameUserRankingRestResponse>;
+  status: string;
+  message: string;
+  total_count: number;
+  links: LinksRestResponse;
+  timestamp: string;
+};
+
 export type RestResponseListGameTypeRestResponse = {
   data?: Array<GameTypeRestResponse>;
   status: string;
@@ -1379,6 +1401,25 @@ export type UpdateResponses = {
 };
 
 export type UpdateResponse = UpdateResponses[keyof UpdateResponses];
+
+export type DeleteStoreData = {
+  body?: never;
+  path: {
+    storeId: number;
+  };
+  query?: never;
+  url: '/manager/stores/{storeId}';
+};
+
+export type DeleteStoreResponses = {
+  /**
+   * OK
+   */
+  200: RestResponseString;
+};
+
+export type DeleteStoreResponse =
+  DeleteStoreResponses[keyof DeleteStoreResponses];
 
 export type UpdateStoreData = {
   body: UpdateStoreRestRequest;
@@ -1531,6 +1572,26 @@ export type UpdateGameResponses = {
 };
 
 export type UpdateGameResponse = UpdateGameResponses[keyof UpdateGameResponses];
+
+export type DeleteGameTableData = {
+  body?: never;
+  path: {
+    gameId: string;
+    tableId: string;
+  };
+  query?: never;
+  url: '/manager/games/{gameId}/tables/{tableId}';
+};
+
+export type DeleteGameTableResponses = {
+  /**
+   * OK
+   */
+  200: RestResponseString;
+};
+
+export type DeleteGameTableResponse =
+  DeleteGameTableResponses[keyof DeleteGameTableResponses];
 
 export type UpdateGameTableData = {
   body: UpdateGameTableRestRequest;
@@ -2043,39 +2104,6 @@ export type CreateGameResponses = {
 
 export type CreateGameResponse = CreateGameResponses[keyof CreateGameResponses];
 
-export type GetAwardedPointAwardsData = {
-  body?: never;
-  path?: never;
-  query?: never;
-  url: '/manager/points/awards';
-};
-
-export type GetAwardedPointAwardsResponses = {
-  /**
-   * OK
-   */
-  200: RestResponseListPointAwardRestResponse;
-};
-
-export type GetAwardedPointAwardsResponse =
-  GetAwardedPointAwardsResponses[keyof GetAwardedPointAwardsResponses];
-
-export type AwardPointData = {
-  body: AwardPointRestRequest;
-  path?: never;
-  query?: never;
-  url: '/manager/points/awards';
-};
-
-export type AwardPointResponses = {
-  /**
-   * OK
-   */
-  200: RestResponsePointAwardRestResponse;
-};
-
-export type AwardPointResponse = AwardPointResponses[keyof AwardPointResponses];
-
 export type GetPaymentsInStoreData = {
   body?: never;
   path: {
@@ -2313,6 +2341,44 @@ export type ChangeGameTableParticipantsResponses = {
 export type ChangeGameTableParticipantsResponse =
   ChangeGameTableParticipantsResponses[keyof ChangeGameTableParticipantsResponses];
 
+export type GetGameUserRankingsData = {
+  body?: never;
+  path: {
+    gameId: string;
+  };
+  query?: never;
+  url: '/manager/games/{gameId}/ranks';
+};
+
+export type GetGameUserRankingsResponses = {
+  /**
+   * OK
+   */
+  200: RestResponseListGameUserRankingRestResponse;
+};
+
+export type GetGameUserRankingsResponse =
+  GetGameUserRankingsResponses[keyof GetGameUserRankingsResponses];
+
+export type CreateGameUserRankingsData = {
+  body: Array<CreateGameUserRankingRestRequest>;
+  path: {
+    gameId: string;
+  };
+  query?: never;
+  url: '/manager/games/{gameId}/ranks';
+};
+
+export type CreateGameUserRankingsResponses = {
+  /**
+   * OK
+   */
+  200: RestResponseListGameUserRankingRestResponse;
+};
+
+export type CreateGameUserRankingsResponse =
+  CreateGameUserRankingsResponses[keyof CreateGameUserRankingsResponses];
+
 export type GetGameStructureTemplatesData = {
   body?: never;
   path?: never;
@@ -2351,7 +2417,7 @@ export type WithdrawData = {
   body?: never;
   path?: never;
   query?: never;
-  url: '/auth/withdarw';
+  url: '/auth/withdraw';
 };
 
 export type WithdrawResponses = {
@@ -2517,6 +2583,25 @@ export type CreateGameTypeResponses = {
 
 export type CreateGameTypeResponse =
   CreateGameTypeResponses[keyof CreateGameTypeResponses];
+
+export type ChangeGameStatusData = {
+  body: 'WAITING' | 'PLAYING' | 'FINISHED';
+  path: {
+    gameId: string;
+  };
+  query?: never;
+  url: '/manager/games/{gameId}/status';
+};
+
+export type ChangeGameStatusResponses = {
+  /**
+   * OK
+   */
+  200: RestResponseGameRestResponse;
+};
+
+export type ChangeGameStatusResponse =
+  ChangeGameStatusResponses[keyof ChangeGameStatusResponses];
 
 export type SetFileUploadCompletedData = {
   body?: never;
@@ -3014,6 +3099,23 @@ export type GetStoreUsersResponses = {
 export type GetStoreUsersResponse =
   GetStoreUsersResponses[keyof GetStoreUsersResponses];
 
+export type GetAwardedPointAwardsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: '/manager/points/awards';
+};
+
+export type GetAwardedPointAwardsResponses = {
+  /**
+   * OK
+   */
+  200: RestResponseListPointAwardRestResponse;
+};
+
+export type GetAwardedPointAwardsResponse =
+  GetAwardedPointAwardsResponses[keyof GetAwardedPointAwardsResponses];
+
 export type GetPaymentsInStoreOfUserData = {
   body?: never;
   path: {
@@ -3167,6 +3269,26 @@ export type GetGameTablesResponses = {
 
 export type GetGameTablesResponse =
   GetGameTablesResponses[keyof GetGameTablesResponses];
+
+export type GetCurrentUserGameRankingsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    page?: number;
+    size?: number;
+  };
+  url: '/games/ranks';
+};
+
+export type GetCurrentUserGameRankingsResponses = {
+  /**
+   * OK
+   */
+  200: RestResponseWithPaginationListGameUserRankingRestResponse;
+};
+
+export type GetCurrentUserGameRankingsResponse =
+  GetCurrentUserGameRankingsResponses[keyof GetCurrentUserGameRankingsResponses];
 
 export type GetGameTypesData = {
   body?: never;

@@ -10,6 +10,8 @@ import type {
   FindByIdResponse,
   UpdateData,
   UpdateResponse,
+  DeleteStoreData,
+  DeleteStoreResponse,
   UpdateStoreData,
   UpdateStoreResponse,
   GetPaymentData,
@@ -26,6 +28,8 @@ import type {
   UpdateItemResponse,
   UpdateGameData,
   UpdateGameResponse,
+  DeleteGameTableData,
+  DeleteGameTableResponse,
   UpdateGameTableData,
   UpdateGameTableResponse,
   GetGameStructureTemplateData,
@@ -80,10 +84,6 @@ import type {
   MergeTempUserResponse,
   CreateGameData,
   CreateGameResponse,
-  GetAwardedPointAwardsData,
-  GetAwardedPointAwardsResponse,
-  AwardPointData,
-  AwardPointResponse,
   GetPaymentsInStoreData,
   GetPaymentsInStoreResponse,
   CreatePaymentData,
@@ -108,6 +108,10 @@ import type {
   CreateGameTableResponse,
   ChangeGameTableParticipantsData,
   ChangeGameTableParticipantsResponse,
+  GetGameUserRankingsData,
+  GetGameUserRankingsResponse,
+  CreateGameUserRankingsData,
+  CreateGameUserRankingsResponse,
   GetGameStructureTemplatesData,
   GetGameStructureTemplatesResponse,
   CreateGameStructureTemplateData,
@@ -132,6 +136,8 @@ import type {
   CreateLeagueResponse,
   CreateGameTypeData,
   CreateGameTypeResponse,
+  ChangeGameStatusData,
+  ChangeGameStatusResponse,
   SetFileUploadCompletedData,
   SetFileUploadCompletedResponse,
   GetReceivedVouchersData,
@@ -180,6 +186,8 @@ import type {
   GetNotificationResponse,
   GetStoreUsersData,
   GetStoreUsersResponse,
+  GetAwardedPointAwardsData,
+  GetAwardedPointAwardsResponse,
   GetPaymentsInStoreOfUserData,
   GetPaymentsInStoreOfUserResponse,
   GetOrdersInStoreData,
@@ -196,6 +204,8 @@ import type {
   GetGameResponse,
   GetGameTablesData,
   GetGameTablesResponse,
+  GetCurrentUserGameRankingsData,
+  GetCurrentUserGameRankingsResponse,
   GetGameTypesData,
   GetGameTypesResponse,
   GetGameTypeData,
@@ -263,6 +273,25 @@ export const update = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options?.headers
     }
+  });
+};
+
+export const deleteStore = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteStoreData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).delete<
+    DeleteStoreResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/manager/stores/{storeId}',
+    ...options
   });
 };
 
@@ -435,6 +464,25 @@ export const updateGame = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options?.headers
     }
+  });
+};
+
+export const deleteGameTable = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteGameTableData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).delete<
+    DeleteGameTableResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/manager/games/{gameId}/tables/{tableId}',
+    ...options
   });
 };
 
@@ -1015,48 +1063,6 @@ export const createGame = <ThrowOnError extends boolean = false>(
   });
 };
 
-export const getAwardedPointAwards = <ThrowOnError extends boolean = false>(
-  options?: Options<GetAwardedPointAwardsData, ThrowOnError>
-) => {
-  return (options?.client ?? _heyApiClient).get<
-    GetAwardedPointAwardsResponse,
-    unknown,
-    ThrowOnError
-  >({
-    security: [
-      {
-        scheme: 'bearer',
-        type: 'http'
-      }
-    ],
-    url: '/manager/points/awards',
-    ...options
-  });
-};
-
-export const awardPoint = <ThrowOnError extends boolean = false>(
-  options: Options<AwardPointData, ThrowOnError>
-) => {
-  return (options.client ?? _heyApiClient).post<
-    AwardPointResponse,
-    unknown,
-    ThrowOnError
-  >({
-    security: [
-      {
-        scheme: 'bearer',
-        type: 'http'
-      }
-    ],
-    url: '/manager/points/awards',
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options?.headers
-    }
-  });
-};
-
 export const getPaymentsInStore = <ThrowOnError extends boolean = false>(
   options: Options<GetPaymentsInStoreData, ThrowOnError>
 ) => {
@@ -1311,6 +1317,48 @@ export const changeGameTableParticipants = <
   });
 };
 
+export const getGameUserRankings = <ThrowOnError extends boolean = false>(
+  options: Options<GetGameUserRankingsData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).get<
+    GetGameUserRankingsResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/manager/games/{gameId}/ranks',
+    ...options
+  });
+};
+
+export const createGameUserRankings = <ThrowOnError extends boolean = false>(
+  options: Options<CreateGameUserRankingsData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).post<
+    CreateGameUserRankingsResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/manager/games/{gameId}/ranks',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers
+    }
+  });
+};
+
 export const getGameStructureTemplates = <ThrowOnError extends boolean = false>(
   options?: Options<GetGameStructureTemplatesData, ThrowOnError>
 ) => {
@@ -1369,7 +1417,7 @@ export const withdraw = <ThrowOnError extends boolean = false>(
         type: 'http'
       }
     ],
-    url: '/auth/withdarw',
+    url: '/auth/withdraw',
     ...options
   });
 };
@@ -1533,6 +1581,29 @@ export const createGameType = <ThrowOnError extends boolean = false>(
       }
     ],
     url: '/admin/games/game-types',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers
+    }
+  });
+};
+
+export const changeGameStatus = <ThrowOnError extends boolean = false>(
+  options: Options<ChangeGameStatusData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).patch<
+    ChangeGameStatusResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/manager/games/{gameId}/status',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -1933,6 +2004,25 @@ export const getStoreUsers = <ThrowOnError extends boolean = false>(
   });
 };
 
+export const getAwardedPointAwards = <ThrowOnError extends boolean = false>(
+  options?: Options<GetAwardedPointAwardsData, ThrowOnError>
+) => {
+  return (options?.client ?? _heyApiClient).get<
+    GetAwardedPointAwardsResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/manager/points/awards',
+    ...options
+  });
+};
+
 export const getPaymentsInStoreOfUser = <ThrowOnError extends boolean = false>(
   options: Options<GetPaymentsInStoreOfUserData, ThrowOnError>
 ) => {
@@ -2045,6 +2135,27 @@ export const getGameTables = <ThrowOnError extends boolean = false>(
     ThrowOnError
   >({
     url: '/games/{gameId}/tables',
+    ...options
+  });
+};
+
+export const getCurrentUserGameRankings = <
+  ThrowOnError extends boolean = false
+>(
+  options?: Options<GetCurrentUserGameRankingsData, ThrowOnError>
+) => {
+  return (options?.client ?? _heyApiClient).get<
+    GetCurrentUserGameRankingsResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/games/ranks',
     ...options
   });
 };
