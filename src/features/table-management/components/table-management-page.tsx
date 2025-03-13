@@ -2,8 +2,6 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import PageContainer from '@/components/layout/page-container';
-import { Game, mockGames } from '@/mocks/games';
-import { GameTable, mockTables } from '@/mocks/tables';
 import { User, mockUsers } from '@/mocks/users';
 import {
   Select,
@@ -32,6 +30,10 @@ import { v4 as uuid } from 'uuid';
 import SortableUser from './sortable-user';
 import UserList from './user-list';
 import DroppableTable from './droppable-table';
+import { useGames } from '@/hooks/use-games';
+import { useGameTables } from '@/hooks/use-game-tables';
+import { useGameTypes } from '@/hooks/use-game-types';
+import type { GameTableRestResponse, TestUser } from '@/lib/api';
 
 function arraysEqual(a: any[], b: any[]): boolean {
   if (a.length !== b.length) return false;
@@ -42,18 +44,30 @@ function arraysEqual(a: any[], b: any[]): boolean {
 }
 
 export default function TableManagementPage() {
-  const [availableUsers, setAvailableUsers] = useState(
-    mockUsers.filter(
-      (user) => !mockTables.some((table) => table.player_ids.includes(user.id))
-    )
-  );
-  const [tables, setTables] = useState<GameTable[]>(mockTables);
-  const [activeUser, setActiveUser] = useState<null | User>(null);
+  const [availableUsers, setAvailableUsers] = useState<User[]>(mockUsers);
+  const [selectedGameId, setSelectedGameId] = useState<string>();
+  const [activeUser, setActiveUser] = useState<null | User | TestUser>(null);
   const [newTableName, setNewTableName] = useState('');
-  const [selectedGame, setSelectedGame] = useState<Game | undefined>(undefined);
+  const [maxPlayers, setMaxPlayers] = useState<number>(6);
   const sensors = useSensors(useSensor(MouseSensor), useSensor(TouchSensor));
   const lastDragOverUpdateRef = useRef(0);
   const CAPACITY = 11;
+
+  const { games, selectedGame } = useGames(selectedGameId);
+  const { gameTypes } = useGameTypes();
+  const {
+    tables = [],
+    createGameTable,
+    updateGameTable,
+    changeParticipants,
+    isChangingParticipants,
+    deleteGameTable,
+    isDeletingTable
+  } = useGameTables(selectedGameId);
+
+  const tableList = (
+    Array.isArray(tables) ? tables : (tables?.data ?? [])
+  ) as GameTableRestResponse[];
 
   function handleDragStart(event: DragStartEvent) {
     const { active } = event;
@@ -62,25 +76,34 @@ export default function TableManagementPage() {
   }
 
   function handleDragOver(event: DragOverEvent) {
+    if (!selectedGameId) return;
+
     const { active, over } = event;
     if (!over) return;
+
     const activeId = active.id.toString();
     const overId = over.id.toString();
     const sourceContainer = active.data.current?.containerId as string;
     const destinationContainer =
       (over.data.current?.containerId as string) || overId;
+
     let throttleDelay = 50;
     if (destinationContainer !== 'user-list') {
-      const destTable = tables.find(
+      const destTable = tableList.find(
         (table) => table.id === destinationContainer
       );
-      if (destTable && destTable.player_ids.length === 0) {
+      if (
+        destTable &&
+        (!destTable.participants || destTable.participants.length === 0)
+      ) {
         throttleDelay = 0;
       }
     }
+
     const now = Date.now();
     if (now - lastDragOverUpdateRef.current < throttleDelay) return;
     lastDragOverUpdateRef.current = now;
+
     if (sourceContainer === destinationContainer) {
       if (sourceContainer === 'user-list') {
         setAvailableUsers((prev) => {
@@ -101,69 +124,71 @@ export default function TableManagementPage() {
             : newOrder;
         });
       } else {
-        setTables((prevTables) =>
-          prevTables.map((table) => {
-            if (table.id === sourceContainer) {
-              const sourceIndex = table.player_ids.indexOf(activeId);
-              const destIndex = table.player_ids.indexOf(overId);
-              if (
-                sourceIndex === -1 ||
-                destIndex === -1 ||
-                sourceIndex === destIndex
-              )
-                return table;
-              const newIds = arrayMove(
-                table.player_ids,
-                sourceIndex,
-                destIndex
-              );
-              return arraysEqual(newIds, table.player_ids)
-                ? table
-                : { ...table, player_ids: newIds };
+        const table = tableList.find((t) => t.id === sourceContainer);
+        if (!table) return;
+
+        const participantIds = table.participants?.map((p) => p.id) ?? [];
+        const sourceIndex = participantIds.indexOf(activeId);
+        const destIndex = participantIds.indexOf(overId);
+        if (sourceIndex === -1 || destIndex === -1 || sourceIndex === destIndex)
+          return;
+
+        const newIds = arrayMove(participantIds, sourceIndex, destIndex);
+        if (!arraysEqual(newIds, participantIds)) {
+          changeParticipants({
+            gameId: selectedGameId,
+            tableId: table.id,
+            data: {
+              participant_ids: newIds
             }
-            return table;
-          })
-        );
+          });
+        }
       }
     } else {
       if (
         sourceContainer === 'user-list' &&
         destinationContainer !== 'user-list'
       ) {
-        const destTable = tables.find(
+        const destTable = tableList.find(
           (table) => table.id === destinationContainer
         );
-        if (destTable && destTable.player_ids.length >= CAPACITY) return;
-        setAvailableUsers((prev) => prev.filter((u) => u.id !== activeId));
-        setTables((prevTables) =>
-          prevTables.map((table) => {
-            if (table.id === destinationContainer) {
-              const newIds = [...table.player_ids];
-              const destIndex =
-                over.data.current?.sortable?.index ?? newIds.length;
-              if (!newIds.includes(activeId)) {
-                newIds.splice(destIndex, 0, activeId);
-                return { ...table, player_ids: newIds };
-              }
+        if (!destTable || (destTable.participants?.length ?? 0) >= maxPlayers)
+          return;
+
+        const participantIds = destTable.participants?.map((p) => p.id) ?? [];
+        const destIndex =
+          over.data.current?.sortable?.index ?? participantIds.length;
+
+        if (!participantIds.includes(activeId)) {
+          const newIds = [...participantIds];
+          newIds.splice(destIndex, 0, activeId);
+          changeParticipants({
+            gameId: selectedGameId,
+            tableId: destTable.id,
+            data: {
+              participant_ids: newIds
             }
-            return table;
-          })
-        );
+          });
+          setAvailableUsers((prev) => prev.filter((u) => u.id !== activeId));
+        }
       } else if (
         sourceContainer !== 'user-list' &&
         destinationContainer === 'user-list'
       ) {
-        setTables((prevTables) =>
-          prevTables.map((table) => {
-            if (table.id === sourceContainer) {
-              const newIds = table.player_ids.filter((id) => id !== activeId);
-              return newIds.length === table.player_ids.length
-                ? table
-                : { ...table, player_ids: newIds };
-            }
-            return table;
-          })
+        const sourceTable = tableList.find(
+          (table) => table.id === sourceContainer
         );
+        if (!sourceTable) return;
+
+        const participantIds = sourceTable.participants?.map((p) => p.id) ?? [];
+        changeParticipants({
+          gameId: selectedGameId,
+          tableId: sourceTable.id,
+          data: {
+            participant_ids: participantIds.filter((id) => id !== activeId)
+          }
+        });
+
         const movedUser = mockUsers.find((u) => u.id === activeId);
         if (movedUser) {
           setAvailableUsers((prev) => {
@@ -178,38 +203,49 @@ export default function TableManagementPage() {
         sourceContainer !== 'user-list' &&
         destinationContainer !== 'user-list'
       ) {
-        const destTable = tables.find(
+        const sourceTable = tableList.find(
+          (table) => table.id === sourceContainer
+        );
+        const destTable = tableList.find(
           (table) => table.id === destinationContainer
         );
-        if (destTable && destTable.player_ids.length >= CAPACITY) return;
-        setTables((prevTables) => {
-          let moved: string | null = null;
-          const updated = prevTables.map((table) => {
-            if (table.id === sourceContainer) {
-              const newIds = table.player_ids.filter((id) => {
-                if (id === activeId) {
-                  moved = id;
-                  return false;
-                }
-                return true;
-              });
-              return { ...table, player_ids: newIds };
-            }
-            return table;
-          });
-          return updated.map((table) => {
-            if (table.id === destinationContainer && moved !== null) {
-              const newIds = [...table.player_ids];
-              const destIndex =
-                over.data.current?.sortable?.index ?? newIds.length;
-              if (!newIds.includes(activeId)) {
-                newIds.splice(destIndex, 0, activeId);
-                return { ...table, player_ids: newIds };
-              }
-            }
-            return table;
-          });
+
+        if (
+          !sourceTable ||
+          !destTable ||
+          (destTable.participants?.length ?? 0) >= maxPlayers
+        )
+          return;
+
+        // Remove from source table
+        const sourceParticipantIds =
+          sourceTable.participants?.map((p) => p.id) ?? [];
+        changeParticipants({
+          gameId: selectedGameId,
+          tableId: sourceTable.id,
+          data: {
+            participant_ids: sourceParticipantIds.filter(
+              (id) => id !== activeId
+            )
+          }
         });
+
+        // Add to destination table
+        const destParticipantIds =
+          destTable.participants?.map((p) => p.id) ?? [];
+        const destIndex =
+          over.data.current?.sortable?.index ?? destParticipantIds.length;
+        if (!destParticipantIds.includes(activeId)) {
+          const newIds = [...destParticipantIds];
+          newIds.splice(destIndex, 0, activeId);
+          changeParticipants({
+            gameId: selectedGameId,
+            tableId: destTable.id,
+            data: {
+              participant_ids: newIds
+            }
+          });
+        }
       }
     }
   }
@@ -219,16 +255,38 @@ export default function TableManagementPage() {
   }
 
   function handleAddTable() {
-    if (!newTableName.trim()) return;
-    const newTable: GameTable = {
-      id: uuid(),
-      name: newTableName,
-      player_ids: [],
-      status: '대기 중',
-      created_at: new Date().toISOString()
-    };
-    setTables((prev) => [...prev, newTable]);
+    if (!newTableName.trim() || !selectedGameId) return;
+
+    createGameTable({
+      gameId: selectedGameId,
+      data: {
+        name: newTableName,
+        max_players: maxPlayers
+      }
+    });
+
     setNewTableName('');
+  }
+
+  function handleDeleteTable(tableId: string) {
+    if (!selectedGameId) return;
+
+    const table = tableList.find((t) => t.id === tableId);
+    if (!table) return;
+
+    // Move participants back to available users list
+    const participants = table.participants ?? [];
+    const participantUsers = participants
+      .map((p) => mockUsers.find((u) => u.id === p.id))
+      .filter((u): u is User => u !== undefined);
+
+    setAvailableUsers((prev) => [...prev, ...participantUsers]);
+
+    // Delete the table
+    deleteGameTable({
+      gameId: selectedGameId,
+      tableId: tableId
+    });
   }
 
   return (
@@ -241,20 +299,25 @@ export default function TableManagementPage() {
       <PageContainer>
         <div className='mb-4 grid grid-cols-2 gap-2'>
           <Select
-            value={selectedGame?.id}
+            value={selectedGameId}
             onValueChange={(gameId) => {
-              setSelectedGame(mockGames.find((item) => item.id === gameId)!);
+              setSelectedGameId(gameId);
             }}
           >
             <SelectTrigger>
               <SelectValue placeholder='게임 선택' />
             </SelectTrigger>
             <SelectContent>
-              {mockGames.map((item) => (
-                <SelectItem key={item.id} value={item.id}>
-                  {item.name}
-                </SelectItem>
-              ))}
+              {games?.data?.map((game) => {
+                const gameType = gameTypes?.data?.find(
+                  (type) => type.id === game.game_type_id
+                );
+                return (
+                  <SelectItem key={game.id} value={game.id}>
+                    {gameType?.name ?? '알 수 없는 게임'} - {game.mode}
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
@@ -267,7 +330,12 @@ export default function TableManagementPage() {
           </Section>
           {selectedGame && (
             <Section>
-              <SectionTitle>{selectedGame.name} - 테이블 현황</SectionTitle>
+              <SectionTitle>
+                {gameTypes?.data?.find(
+                  (type) => type.id === selectedGame.data?.game_type_id
+                )?.name ?? '알 수 없는 게임'}{' '}
+                - {selectedGame.data?.mode} - 테이블 현황
+              </SectionTitle>
               <SectionContent>
                 <div className='mb-4 flex items-center gap-2'>
                   <Input
@@ -276,6 +344,21 @@ export default function TableManagementPage() {
                     value={newTableName}
                     onChange={(e) => setNewTableName(e.target.value)}
                   />
+                  <Select
+                    value={String(maxPlayers)}
+                    onValueChange={(value) => setMaxPlayers(Number(value))}
+                  >
+                    <SelectTrigger className='w-[120px]'>
+                      <SelectValue placeholder='최대 인원' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {[4, 6, 8, 9, 10, 11].map((num) => (
+                        <SelectItem key={num} value={String(num)}>
+                          {num}명
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Button
                     variant='secondary'
                     className='flex-none p-2'
@@ -286,11 +369,12 @@ export default function TableManagementPage() {
                   </Button>
                 </div>
                 <ul className='grid grid-cols-2 gap-2'>
-                  {tables.map((table) => (
+                  {tableList.map((table) => (
                     <DroppableTable
                       key={table.id}
                       table={table}
                       users={mockUsers}
+                      onDelete={() => handleDeleteTable(table.id)}
                     />
                   ))}
                 </ul>

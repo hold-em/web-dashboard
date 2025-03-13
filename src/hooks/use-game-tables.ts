@@ -3,7 +3,8 @@ import {
   createGameTable,
   updateGameTable,
   changeGameTableParticipants,
-  getGameTables
+  getGameTables,
+  deleteGameTable
 } from '@/lib/api';
 import type {
   CreateGameTableRestRequest,
@@ -34,17 +35,17 @@ export function useGameTables(gameId?: string) {
         gameId,
         data
       }: {
-        gameId: number;
+        gameId: string;
         data: CreateGameTableRestRequest;
       }) => {
         const response = await createGameTable({
           body: data,
-          path: { gameId: String(gameId) }
+          path: { gameId: gameId }
         });
         return response.data;
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['games'] });
+        queryClient.invalidateQueries({ queryKey: ['gameTables', gameId] });
       }
     });
 
@@ -56,8 +57,8 @@ export function useGameTables(gameId?: string) {
         tableId,
         data
       }: {
-        gameId: number;
-        tableId: number;
+        gameId: string;
+        tableId: string;
         data: UpdateGameTableRestRequest;
       }) => {
         const response = await updateGameTable({
@@ -67,7 +68,7 @@ export function useGameTables(gameId?: string) {
         return response.data;
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['games'] });
+        queryClient.invalidateQueries({ queryKey: ['gameTables', gameId] });
       }
     });
 
@@ -81,20 +82,40 @@ export function useGameTables(gameId?: string) {
       tableId,
       data
     }: {
-      gameId: number;
-      tableId: number;
+      gameId: string;
+      tableId: string;
       data: ChangeGameTableParticipantsRestRequest;
     }) => {
       const response = await changeGameTableParticipants({
         body: data,
-        path: { gameId: String(gameId), tableId: String(tableId) }
+        path: { gameId: gameId, tableId: tableId }
       });
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['games'] });
+      queryClient.invalidateQueries({ queryKey: ['gameTables', gameId] });
     }
   });
+
+  // Delete game table mutation
+  const { mutate: deleteGameTableMutation, isPending: isDeletingTable } =
+    useMutation({
+      mutationFn: async ({
+        gameId,
+        tableId
+      }: {
+        gameId: string;
+        tableId: string;
+      }) => {
+        const response = await deleteGameTable({
+          path: { gameId: gameId, tableId: tableId }
+        });
+        return response.data;
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['gameTables', gameId] });
+      }
+    });
 
   return {
     tables,
@@ -104,6 +125,8 @@ export function useGameTables(gameId?: string) {
     updateGameTable: updateGameTableMutation,
     isUpdatingTable,
     changeParticipants: changeParticipantsMutation,
-    isChangingParticipants
+    isChangingParticipants,
+    deleteGameTable: deleteGameTableMutation,
+    isDeletingTable
   };
 }

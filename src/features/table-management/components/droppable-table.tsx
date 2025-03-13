@@ -1,6 +1,5 @@
 'use client';
 import { useDroppable } from '@dnd-kit/core';
-import { GameTable } from '@/mocks/tables';
 import { Icons } from '@/components/icons';
 import {
   SortableContext,
@@ -8,20 +7,21 @@ import {
 } from '@dnd-kit/sortable';
 import SortableUser from './sortable-user';
 import { User } from '@/mocks/users';
+import { GameTableRestResponse } from '@/lib/api';
 
 export default function DroppableTable({
   table,
   users
 }: {
-  table: GameTable;
+  table: GameTableRestResponse;
   users: User[];
 }) {
   const { setNodeRef } = useDroppable({
     id: table.id,
     data: { containerId: table.id, type: 'table', table }
   });
-  const capacity = 6;
-  const count = table.player_ids.length;
+  const capacity = table.max_players;
+  const count = table.participants?.length ?? 0;
   let bgColor = '';
   if (count === 0) {
     bgColor = 'bg-gray-200';
@@ -48,22 +48,19 @@ export default function DroppableTable({
         </div>
         <div className='mt-2 space-y-1'>
           <SortableContext
-            items={table.player_ids}
+            items={table.participants?.map((p) => p.id) ?? []}
             strategy={verticalListSortingStrategy}
           >
-            {table.player_ids.length === 0 ? (
+            {!table.participants || table.participants.length === 0 ? (
               <div className='min-h-[40px] w-full' />
             ) : (
-              table.player_ids.map((userId) => {
-                const user = users.find((u) => u.id === userId);
-                return user ? (
-                  <SortableUser
-                    key={user.id}
-                    user={user}
-                    containerId={table.id}
-                  />
-                ) : null;
-              })
+              table.participants.map((participant) => (
+                <SortableUser
+                  key={participant.id}
+                  user={participant}
+                  containerId={table.id}
+                />
+              ))
             )}
           </SortableContext>
         </div>

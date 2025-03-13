@@ -30,7 +30,7 @@ const columns: ColumnDef<GameWinHistory>[] = [
   },
   {
     accessorKey: 'prize',
-    header: '상금',
+    header: 'PRIZE',
     cell: ({ row }) =>
       Number(row.getValue('prize')).toLocaleString('ko-KR', {
         style: 'currency',
@@ -58,7 +58,7 @@ export default function GameWinHistorySection({
 
   return (
     <Section>
-      <SectionTitle>게임 우승 이력</SectionTitle>
+      <SectionTitle>수상 내역</SectionTitle>
       <SectionContent>
         <Table>
           <TableHeader>

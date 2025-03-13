@@ -1,15 +1,15 @@
 'use client';
-import { User } from '@/mocks/users';
-import { CSS } from '@dnd-kit/utilities';
 import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { User } from '@/mocks/users';
+import { TestUser } from '@/lib/api';
 
-export default function SortableUser({
-  user,
-  containerId
-}: {
-  user: User;
+type SortableUserProps = {
+  user: User | TestUser;
   containerId: string;
-}) {
+};
+
+export default function SortableUser({ user, containerId }: SortableUserProps) {
   const {
     attributes,
     listeners,
@@ -17,22 +17,32 @@ export default function SortableUser({
     transform,
     transition,
     isDragging
-  } = useSortable({ id: user.id, data: { type: 'user', user, containerId } });
+  } = useSortable({
+    id: user.id,
+    data: { containerId, type: 'user', user }
+  });
+
   const style = {
     transform: CSS.Transform.toString(transform),
-    opacity: isDragging ? 0.5 : 1,
     transition
   };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      suppressHydrationWarning
-      {...listeners}
       {...attributes}
-      className='cursor-move rounded border bg-white p-2'
+      {...listeners}
+      className={`cursor-grab rounded-sm border border-gray-200 bg-white p-2 ${isDragging ? 'opacity-50' : ''}`}
     >
-      {user.name + '(' + user.phone.slice(9) + ')'}
+      <div className='flex items-center gap-2'>
+        <div className='flex-1'>
+          <div className='font-medium'>{user.name}</div>
+          {'nickname' in user && user.nickname && (
+            <div className='text-sm text-gray-500'>{user.nickname}</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

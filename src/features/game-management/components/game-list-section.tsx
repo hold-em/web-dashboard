@@ -56,7 +56,7 @@ export default function GameListSection({
       },
       {
         accessorKey: 'prize',
-        header: '상금',
+        header: 'PRIZE',
         cell: ({ row }) => (
           <div>
             {row.getValue('prize') ? `${row.getValue('prize')}원` : '-'}
