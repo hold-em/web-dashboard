@@ -14,13 +14,6 @@ import { paymentSchema, type PaymentFormData } from '../utils/form-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
 import { Product, PaymentHistory } from '@/mocks/payments';
 import {
   Popover,
@@ -37,14 +30,17 @@ import {
 } from '@/components/ui/command';
 import { ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { User } from '@/mocks/users';
 import { v4 as uuid } from 'uuid';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Input } from '@/components/ui/input';
+import { UserResponse } from '@/lib/api/types.gen';
 
-const paymentMethods = ['카드', '현금', '이용권'] as const;
+// 결제 수단 목록
+const paymentMethods = ['카드', '현금', '이용권', '미수'] as const;
 
 interface PaymentAdditionSectionProps {
   products: Product[];
-  users: User[];
+  users: UserResponse[];
   addPaymentHistory: (paymentHistory: PaymentHistory) => void;
 }
 
@@ -63,7 +59,9 @@ export default function PaymentAdditionSection({
     }
   });
   const [open, setOpen] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<User | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<UserResponse | null>(
+    null
+  );
 
   const onSubmit: SubmitHandler<PaymentFormData> = (data) => {
     const newPaymentHistory: PaymentHistory = {
@@ -88,7 +86,7 @@ export default function PaymentAdditionSection({
       <SectionTitle>결제 추가</SectionTitle>
       <SectionContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
             <FormField
               control={form.control}
               name='user_id'
@@ -150,54 +148,68 @@ export default function PaymentAdditionSection({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='product_id'
-              render={({ field: { value, onChange } }) => (
-                <FormItem>
+              render={({ field }) => (
+                <FormItem className='space-y-3'>
                   <FormLabel>결제 항목</FormLabel>
                   <FormControl>
-                    <Select value={value} onValueChange={onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder='결제 항목 선택' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {products.map((item) => (
-                          <SelectItem key={item.id} value={String(item.id)}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className='flex flex-col space-y-1'
+                    >
+                      {products.map((product) => (
+                        <div
+                          key={product.id}
+                          className='flex items-center space-x-3 space-y-0'
+                        >
+                          <RadioGroupItem value={product.id} id={product.id} />
+                          <FormLabel
+                            htmlFor={product.id}
+                            className='cursor-pointer font-normal'
+                          >
+                            {product.name} ({product.price.toLocaleString()}원)
+                          </FormLabel>
+                        </div>
+                      ))}
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='payment_method'
-              render={({ field: { value, onChange } }) => (
-                <FormItem>
+              render={({ field }) => (
+                <FormItem className='space-y-3'>
                   <FormLabel>결제 수단</FormLabel>
                   <FormControl>
-                    <Select value={value} onValueChange={onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder='결제 수단 선택' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {paymentMethods.map((item) => (
-                          <SelectItem key={item} value={item}>
-                            {item}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className='flex flex-wrap gap-2'>
+                      {paymentMethods.map((method) => (
+                        <Button
+                          key={method}
+                          type='button'
+                          variant={
+                            field.value === method ? 'default' : 'outline'
+                          }
+                          onClick={() => field.onChange(method)}
+                          className='flex-1'
+                        >
+                          {method}
+                        </Button>
+                      ))}
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <Button type='submit' className='w-full'>
               결제 추가
             </Button>

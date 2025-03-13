@@ -21,11 +21,6 @@ import {
   FormControl,
   FormMessage
 } from '@/components/ui/form';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from '@/components/ui/popover';
 
 import {
   ticketDesignFormSchema,
@@ -33,11 +28,6 @@ import {
 } from '../utils/form-schema';
 import { Ticket } from '@/mocks/tickets';
 import { v4 as uuidv4 } from 'uuid';
-import { cn } from '@/lib/utils';
-import { Icons } from '@/components/icons';
-import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
 
 interface TicketDesignDialogProps {
   addTicket: (ticket: Ticket) => void;
@@ -52,17 +42,20 @@ export default function TicketDesignDialog({
     mode: 'onChange',
     defaultValues: {
       name: '',
-      price: undefined
+      gold_count: 0,
+      silver_count: 0,
+      bronze_count: 0
     }
   });
 
   const onSubmit = (data: TicketDesignFormData) => {
-    const { name, price, date } = data;
+    const { name, gold_count, silver_count, bronze_count } = data;
     const newTicket: Ticket = {
       id: uuidv4(),
       name,
-      price,
-      date: date.toISOString(),
+      gold_count,
+      silver_count,
+      bronze_count,
       remaining_count: 0,
       created_at: new Date().toISOString()
     };
@@ -97,19 +90,19 @@ export default function TicketDesignDialog({
             />
             <FormField
               control={form.control}
-              name='price'
+              name='gold_count'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel htmlFor='price'>가격</FormLabel>
+                  <FormLabel htmlFor='gold_count'>골드 개수</FormLabel>
                   <FormControl>
                     <Input
                       type='number'
-                      id='price'
-                      placeholder='가격 입력'
-                      value={field.value ?? ''}
+                      id='gold_count'
+                      placeholder='골드 개수 입력'
+                      value={field.value ?? 0}
                       onChange={(e) =>
                         field.onChange(
-                          e.target.value ? Number(e.target.value) : undefined
+                          e.target.value ? Number(e.target.value) : 0
                         )
                       }
                     />
@@ -120,39 +113,46 @@ export default function TicketDesignDialog({
             />
             <FormField
               control={form.control}
-              name='date'
+              name='silver_count'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>유효기간</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={'outline'}
-                          className={cn(
-                            'w-[full] pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, 'PPP', { locale: ko })
-                          ) : (
-                            <span>유효기간 선택</span>
-                          )}
-                          <Icons.calendar className='ml-auto h-4 w-4 opacity-50' />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className='w-auto p-0' align='start'>
-                      <Calendar
-                        mode='single'
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        locale={ko}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <FormLabel htmlFor='silver_count'>실버 개수</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      id='silver_count'
+                      placeholder='실버 개수 입력'
+                      value={field.value ?? 0}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? Number(e.target.value) : 0
+                        )
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name='bronze_count'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel htmlFor='bronze_count'>브론즈 개수</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      id='bronze_count'
+                      placeholder='브론즈 개수 입력'
+                      value={field.value ?? 0}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? Number(e.target.value) : 0
+                        )
+                      }
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

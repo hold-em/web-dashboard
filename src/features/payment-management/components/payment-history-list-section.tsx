@@ -11,7 +11,7 @@ import {
   getSortedRowModel,
   useReactTable
 } from '@tanstack/react-table';
-import { ChevronDown, Check } from 'lucide-react';
+import { ChevronDown, Check, Download, Pencil } from 'lucide-react';
 import { Section, SectionContent, SectionTitle } from '@/components/section';
 
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,15 @@ import {
 import TablePagination from '@/components/table-pagination';
 import { PaymentHistory, PaymentHistoryItem } from '@/mocks/payments';
 import { PAGE_SIZE } from '@/constants/common';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
 
 const statusItems = [
   { label: '전체', value: '' },
@@ -44,15 +53,40 @@ interface PaymentListProps {
   paymentHistories: PaymentHistory[];
   paymentHistoryItems: PaymentHistoryItem[];
   selectPaymentHistory: (item: PaymentHistoryItem) => void;
+  updatePaymentHistory?: (id: string, memo: string) => void;
 }
 
 export default function PaymentListSection({
   selectPaymentHistory,
-  paymentHistoryItems
+  paymentHistoryItems,
+  updatePaymentHistory
 }: PaymentListProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
+  const [memoDialogOpen, setMemoDialogOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<PaymentHistoryItem | null>(
+    null
+  );
+  const [memo, setMemo] = useState('');
+
+  const handleExportToExcel = () => {
+    // 실제 구현에서는 엑셀 다운로드 로직 구현
+    console.log('Export to Excel');
+  };
+
+  const openMemoDialog = (item: PaymentHistoryItem) => {
+    setSelectedItem(item);
+    setMemo(item.memo || '');
+    setMemoDialogOpen(true);
+  };
+
+  const saveMemo = () => {
+    if (selectedItem && updatePaymentHistory) {
+      updatePaymentHistory(selectedItem.id, memo);
+    }
+    setMemoDialogOpen(false);
+  };
 
   const columns = React.useMemo<ColumnDef<PaymentHistoryItem>[]>(
     () => [
@@ -84,6 +118,29 @@ export default function PaymentListSection({
         cell: ({ row }) => <div>{row.getValue('status')}</div>
       },
       {
+        accessorKey: 'memo',
+        header: '메모',
+        cell: ({ row }) => (
+          <div className='flex items-center'>
+            <span className='max-w-[150px] truncate'>
+              {row.getValue('memo') || '-'}
+            </span>
+            {updatePaymentHistory && (
+              <Button
+                variant='ghost'
+                size='icon'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openMemoDialog(row.original);
+                }}
+              >
+                <Pencil className='h-4 w-4' />
+              </Button>
+            )}
+          </div>
+        )
+      },
+      {
         id: 'actions',
         enableHiding: false,
         header: '관리',
@@ -98,7 +155,7 @@ export default function PaymentListSection({
         )
       }
     ],
-    [selectPaymentHistory]
+    [selectPaymentHistory, updatePaymentHistory]
   );
 
   const table = useReactTable({
@@ -133,37 +190,47 @@ export default function PaymentListSection({
             }
             className='max-w-sm'
           />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant='outline' className='flex-none'>
-                결제 상태 <ChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align='end'>
-              {(() => {
-                const currentStatus = table
-                  .getColumn('status')
-                  ?.getFilterValue() as string | undefined;
-                return statusItems.map((item) => {
-                  const isChecked =
-                    item.value === ''
-                      ? !currentStatus || currentStatus === ''
-                      : currentStatus === item.value;
-                  return (
-                    <DropdownMenuItem
-                      key={item.value}
-                      onClick={() =>
-                        table.getColumn('status')?.setFilterValue(item.value)
-                      }
-                    >
-                      {isChecked && <Check className='mr-2 h-4 w-4' />}
-                      {item.label}
-                    </DropdownMenuItem>
-                  );
-                });
-              })()}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className='flex gap-2'>
+            <Button
+              variant='outline'
+              onClick={handleExportToExcel}
+              className='flex items-center'
+            >
+              <Download className='mr-2 h-4 w-4' />
+              엑셀 다운로드
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant='outline' className='flex-none'>
+                  결제 상태 <ChevronDown />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align='end'>
+                {(() => {
+                  const currentStatus = table
+                    .getColumn('status')
+                    ?.getFilterValue() as string | undefined;
+                  return statusItems.map((item) => {
+                    const isChecked =
+                      item.value === ''
+                        ? !currentStatus || currentStatus === ''
+                        : currentStatus === item.value;
+                    return (
+                      <DropdownMenuItem
+                        key={item.value}
+                        onClick={() =>
+                          table.getColumn('status')?.setFilterValue(item.value)
+                        }
+                      >
+                        {isChecked && <Check className='mr-2 h-4 w-4' />}
+                        {item.label}
+                      </DropdownMenuItem>
+                    );
+                  });
+                })()}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
         <div className='rounded-md border'>
           <Table>
@@ -212,6 +279,27 @@ export default function PaymentListSection({
         </div>
         <TablePagination table={table} />
       </SectionContent>
+
+      <Dialog open={memoDialogOpen} onOpenChange={setMemoDialogOpen}>
+        <DialogContent className='sm:max-w-[425px]'>
+          <DialogHeader>
+            <DialogTitle>메모 편집</DialogTitle>
+          </DialogHeader>
+          <div className='grid gap-4 py-4'>
+            <Textarea
+              placeholder='메모를 입력하세요'
+              value={memo}
+              onChange={(e) => setMemo(e.target.value)}
+              className='min-h-[100px]'
+            />
+          </div>
+          <DialogFooter>
+            <Button type='button' onClick={saveMemo}>
+              저장
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Section>
   );
 }

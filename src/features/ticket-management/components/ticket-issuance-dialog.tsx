@@ -18,7 +18,8 @@ import {
   FormLabel,
   FormItem,
   FormControl,
-  FormMessage
+  FormMessage,
+  FormDescription
 } from '@/components/ui/form';
 import {
   Popover,
@@ -33,31 +34,22 @@ import {
   CommandGroup,
   CommandItem
 } from '@/components/ui/command';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select';
 import { ChevronsUpDown, Check } from 'lucide-react';
 import {
   ticketIssuanceFormSchema,
   TicketIssuanceFormData
 } from '../utils/form-schema';
 import { Ticket } from '@/mocks/tickets';
-import { User } from '@/mocks/users';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/icons';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { format, addYears } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { Store } from '@/mocks/stores';
+import { UserResponse } from '@/lib/api/types.gen';
 
 interface TicketIssuanceDialogProps {
   ticket: Ticket;
-  users: User[];
-  stores: Store[];
+  users: UserResponse[];
   onClose?: () => void;
   openTrigger: number;
 }
@@ -65,18 +57,21 @@ interface TicketIssuanceDialogProps {
 export default function TicketIssuanceDialog({
   ticket,
   users,
-  stores,
   onClose,
   openTrigger
 }: TicketIssuanceDialogProps) {
   const [open, setOpen] = useState(false);
   const [userComboboxOpen, setUserComboboxOpen] = useState<boolean>(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [maxAmount, setMaxAmount] = useState<number>(1);
 
   const form = useForm<TicketIssuanceFormData>({
     resolver: zodResolver(ticketIssuanceFormSchema),
-    mode: 'onChange'
+    mode: 'onChange',
+    defaultValues: {
+      date: addYears(new Date(), 1)
+    }
   });
 
   useEffect(() => {
@@ -84,11 +79,38 @@ export default function TicketIssuanceDialog({
   }, [ticket, openTrigger]);
 
   useEffect(() => {
-    form.reset();
+    form.reset({
+      date: addYears(new Date(), 1)
+    });
     setSelectedUser(null);
   }, [open, form]);
 
+  // 사용자 선택 시 자녀 수에 따라 최대 수량 설정
+  useEffect(() => {
+    if (selectedUser) {
+      // 실제 API에서는 자녀 수 정보를 가져와야 함
+      // 임시로 최대 수량을 3으로 설정
+      const childrenCount = 3;
+      setMaxAmount(childrenCount);
+
+      // 현재 입력된 수량이 최대 수량을 초과하면 최대 수량으로 조정
+      const currentAmount = form.getValues('amount');
+      if (currentAmount && currentAmount > childrenCount) {
+        form.setValue('amount', childrenCount);
+      }
+    }
+  }, [selectedUser, form]);
+
   const onSubmit = (data: TicketIssuanceFormData) => {
+    // 최종 제출 전 수량 검증
+    if (selectedUser && data.amount > maxAmount) {
+      form.setError('amount', {
+        type: 'manual',
+        message: `최대 ${maxAmount}개까지만 지급 가능합니다.`
+      });
+      return;
+    }
+
     setOpen(false);
     form.reset();
     if (onClose) onClose();
@@ -178,13 +200,26 @@ export default function TicketIssuanceDialog({
                       id='amount'
                       placeholder='수량 입력'
                       value={field.value ?? ''}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value ? Number(e.target.value) : undefined
-                        )
-                      }
+                      onChange={(e) => {
+                        const value = e.target.value
+                          ? Number(e.target.value)
+                          : undefined;
+                        // 최대 수량 제한
+                        if (value && value > maxAmount) {
+                          field.onChange(maxAmount);
+                        } else {
+                          field.onChange(value);
+                        }
+                      }}
+                      max={maxAmount}
+                      min={1}
                     />
                   </FormControl>
+                  {selectedUser && (
+                    <FormDescription>
+                      최대 {maxAmount}개까지 지급 가능합니다.
+                    </FormDescription>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -195,62 +230,43 @@ export default function TicketIssuanceDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>유효기간</FormLabel>
+                  <FormControl>
+                    <div className='flex items-center space-x-2'>
+                      <Input
+                        value={format(field.value, 'PPP', { locale: ko })}
+                        readOnly
+                        className='bg-muted'
+                      />
+                      <Button
+                        type='button'
+                        variant='outline'
+                        size='icon'
+                        onClick={() => setCalendarOpen(true)}
+                      >
+                        <Icons.calendar className='h-4 w-4' />
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    기본값은 현재 날짜로부터 1년 후입니다.
+                  </FormDescription>
                   <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant='outline'
-                          className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, 'PPP', { locale: ko })
-                          ) : (
-                            <span>유효기간 선택</span>
-                          )}
-                          <Icons.calendar className='ml-auto h-4 w-4 opacity-50' />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
                     <PopoverContent className='w-auto p-0' align='start'>
                       <Calendar
                         mode='single'
                         selected={field.value}
                         onSelect={(date) => {
-                          field.onChange(date);
+                          if (date) {
+                            field.onChange(date);
+                          }
                           setCalendarOpen(false);
                         }}
                         locale={ko}
                         initialFocus
+                        fromDate={new Date()}
                       />
                     </PopoverContent>
                   </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name='store_id'
-              render={({ field: { value, onChange } }) => (
-                <FormItem>
-                  <FormLabel>리그</FormLabel>
-                  <FormControl>
-                    <Select value={value} onValueChange={onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder='리그 선택' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {stores.map((item) => (
-                          <SelectItem key={item.id} value={item.id}>
-                            {item.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

@@ -1,17 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { PaymentHistory, Product, PaymentHistoryItem } from '@/mocks/payments';
-import PaymentListSection from './payment-history-list-section';
+import { PaymentHistory, PaymentHistoryItem, Product } from '@/mocks/payments';
+import PaymentHistoryListSection from './payment-history-list-section';
 import PaymentAdditionSection from './payment-addition-section';
-import { User } from '@/mocks/users';
+import { UserResponse } from '@/lib/api/types.gen';
 
 interface PaymentManagementViewProps {
   products: Product[];
   paymentHistories: PaymentHistory[];
   paymentHistoryItems: PaymentHistoryItem[];
-  users: User[];
+  users: UserResponse[];
   addPaymentHistory: (paymentHistory: PaymentHistory) => void;
+  updatePaymentHistoryMemo?: (id: string, memo: string) => void;
 }
 
 export default function PaymentManagementView({
@@ -19,28 +20,29 @@ export default function PaymentManagementView({
   paymentHistories,
   paymentHistoryItems,
   users,
-  addPaymentHistory
+  addPaymentHistory,
+  updatePaymentHistoryMemo
 }: PaymentManagementViewProps) {
   const [selectedPaymentHistory, setSelectedPaymentHistory] =
     useState<PaymentHistoryItem | null>(null);
 
-  const selectPaymentHistory = (paymentHistory: PaymentHistoryItem) => {
-    setSelectedPaymentHistory(paymentHistory);
-    console.log(`선택됨 : `, paymentHistory);
+  const selectPaymentHistory = (item: PaymentHistoryItem) => {
+    setSelectedPaymentHistory(item);
   };
 
   return (
-    <>
-      <PaymentListSection
-        paymentHistories={paymentHistories}
-        paymentHistoryItems={paymentHistoryItems}
-        selectPaymentHistory={selectPaymentHistory}
-      />
+    <div className='space-y-8'>
       <PaymentAdditionSection
         products={products}
         users={users}
         addPaymentHistory={addPaymentHistory}
       />
-    </>
+      <PaymentHistoryListSection
+        paymentHistories={paymentHistories}
+        paymentHistoryItems={paymentHistoryItems}
+        selectPaymentHistory={selectPaymentHistory}
+        updatePaymentHistory={updatePaymentHistoryMemo}
+      />
+    </div>
   );
 }

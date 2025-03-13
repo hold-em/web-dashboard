@@ -8,6 +8,13 @@ export interface User {
   created_at: string;
   league_points: number;
   gender: string;
+  children?: Child[];
+}
+
+export interface Child {
+  id: string;
+  name: string;
+  age: number;
 }
 
 export const mockUsers: User[] = [
@@ -19,7 +26,11 @@ export const mockUsers: User[] = [
     member_status: '정회원',
     created_at: '2023-05-10',
     league_points: 720,
-    gender: '여성'
+    gender: '여성',
+    children: [
+      { id: 'c1', name: '김지우', age: 10 },
+      { id: 'c2', name: '김민준', age: 8 }
+    ]
   },
   {
     id: '57df757c-218d-4131-990a-31b5eace78a0',

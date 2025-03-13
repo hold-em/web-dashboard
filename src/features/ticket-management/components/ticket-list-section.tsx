@@ -23,6 +23,7 @@ import {
 import TablePagination from '@/components/table-pagination';
 import { PAGE_SIZE } from '@/constants/common';
 import { Ticket } from '@/mocks/tickets';
+import { Badge } from '@/components/ui/badge';
 
 function daysUntil(dateString: string) {
   const today = new Date();
@@ -53,16 +54,31 @@ export default function TicketListSection({
         cell: ({ row }) => <div>{row.getValue('name')}</div>
       },
       {
-        accessorKey: 'price',
-        header: '가격',
+        accessorKey: 'gold_count',
+        header: '골드',
         cell: ({ row }) => (
-          <div>{Number(row.getValue('price')).toLocaleString()}원</div>
+          <Badge variant='outline' className='bg-yellow-100'>
+            {row.getValue('gold_count')}
+          </Badge>
         )
       },
       {
-        accessorKey: 'date',
-        header: '유효기간',
-        cell: ({ row }) => <div>{daysUntil(row.getValue('date'))}일</div>
+        accessorKey: 'silver_count',
+        header: '실버',
+        cell: ({ row }) => (
+          <Badge variant='outline' className='bg-gray-100'>
+            {row.getValue('silver_count')}
+          </Badge>
+        )
+      },
+      {
+        accessorKey: 'bronze_count',
+        header: '브론즈',
+        cell: ({ row }) => (
+          <Badge variant='outline' className='bg-amber-800 text-white'>
+            {row.getValue('bronze_count')}
+          </Badge>
+        )
       },
       {
         accessorKey: 'remaining_count',
