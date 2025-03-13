@@ -46,7 +46,11 @@ export default function GameInfoSection({
         <StarIcon />
       </div>
       <div className='mt-[16px] flex h-[84px] items-center justify-center rounded-full bg-white/10 text-[54px] font-bold leading-none tracking-[-0.025em] text-white'>
-        {isBeforeStart ? 'BEFORE START' : `LEVEL ${currentLevel}`}
+        {isBeforeStart
+          ? 'BEFORE START'
+          : currentLevel === 0
+            ? 'BREAK TIME'
+            : `LEVEL ${currentLevel}`}
       </div>
       <div className='mt-[16px] text-[260px] font-extrabold leading-none tracking-[-0.025em] text-[#ffc700]'>
         {remainingTime}
@@ -57,12 +61,12 @@ export default function GameInfoSection({
             BLINDS
           </div>
           <div className='text-[60px] font-semibold leading-[140%] tracking-[-0.025em] text-white'>
-            {isBeforeStart
+            {isBeforeStart || currentLevel === 0
               ? '--/--'
               : `${blinds.sb.toLocaleString()}/${blinds.bb.toLocaleString()}`}
           </div>
         </div>
-        {!isBeforeStart && blinds.ante > 0 && (
+        {!isBeforeStart && currentLevel !== 0 && blinds.ante > 0 && (
           <div className='flex items-center justify-between'>
             <div className='text-[54px] font-medium leading-[140%] tracking-[-0.025em] text-white/70'>
               ANTE

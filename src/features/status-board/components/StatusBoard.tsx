@@ -2,11 +2,11 @@
 
 import React, { useCallback, useState, useEffect } from 'react';
 import { useStatusBoard } from '@/hooks/use-status-board';
-import Loading from '@/app/dashboard/overview/@sales/loading';
 import FullscreenIcon from './icons/FullscreenIcon';
 import StatsSection from './sections/StatsSection';
 import GameInfoSection from './sections/GameInfoSection';
 import PrizeListSection from './sections/PrizeListSection';
+import Loading from '@/components/loading';
 
 interface StatusBoardProps {
   gameId: string;

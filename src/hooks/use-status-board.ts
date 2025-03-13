@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getGame, getStore } from '@/lib/api';
 import {
   addMinutes,
@@ -118,6 +118,7 @@ export function useStatusBoard(gameId: string) {
   const currentLevelEndTimeRef = useRef<Date | null>(null);
   const regCloseTimeRef = useRef<Date | null>(null);
   const nextBreakTimeRef = useRef<Date | null>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     setPrizeValues(getPrizeValues(gameId));
@@ -162,9 +163,7 @@ export function useStatusBoard(gameId: string) {
       if (!game || !store) return null;
 
       const now = new Date();
-      console.log('🚀 ~ statusBoard ~ now:', now);
       const gameStartTime = new Date(game.scheduled_at);
-      console.log('🚀 ~ statusBoard ~ gameStartTime:', gameStartTime);
 
       // 게임 시작 전인지 확인
       const isBeforeStart = isBefore(now, gameStartTime);
@@ -290,7 +289,10 @@ export function useStatusBoard(gameId: string) {
       return {
         storeName: store.name,
         gameName: '임시 게임 이름',
-        currentLevel: currentLevel.level ?? currentLevelIndex + 1,
+        currentLevel:
+          currentLevel.type === 'break'
+            ? 0
+            : (currentLevel.level ?? currentLevelIndex + 1),
         remainingTime: formatDuration(duration),
         currentLevelEndTime: nextLevelStartTime,
         isBeforeStart: false,
@@ -301,10 +303,11 @@ export function useStatusBoard(gameId: string) {
         },
         nextLevel: {
           regClose: game.reg_close_level ?? 0,
-          name:
-            nextLevel?.type === 'break'
+          name: nextLevel
+            ? nextLevel.type === 'break'
               ? 'BREAK'
-              : `LEVEL ${nextLevel?.level ?? currentLevelIndex + 2}`,
+              : `LEVEL ${nextLevel?.level ?? currentLevelIndex + 2}`
+            : 'FINAL',
           blinds: nextLevel
             ? nextLevel.type === 'break'
               ? '-'
@@ -337,12 +340,12 @@ export function useStatusBoard(gameId: string) {
 
   // 타이머 설정
   useEffect(() => {
-    if (!statusBoard?.currentLevelEndTime) return;
+    if (!statusBoard?.currentLevelEndTime || !game) return;
 
     const updateTimer = () => {
       const now = new Date();
-      const gameStartTime = new Date(game?.scheduled_at ?? '');
-      const isBeforeStart = game ? isBefore(now, gameStartTime) : false;
+      const gameStartTime = new Date(game.scheduled_at);
+      const isBeforeStart = isBefore(now, gameStartTime);
 
       if (isBeforeStart) {
         // 게임 시작까지 남은 시간 표시
@@ -360,6 +363,11 @@ export function useStatusBoard(gameId: string) {
       if (currentLevelEndTimeRef.current) {
         if (isBefore(currentLevelEndTimeRef.current, now)) {
           setRemainingTime('00:00');
+          // 레벨이 끝났을 때 refetch 트리거
+          if (game) {
+            // @ts-ignore - queryClient is available through useQuery
+            queryClient.invalidateQueries(['game', game.id]);
+          }
         } else {
           const duration = intervalToDuration({
             start: now,
