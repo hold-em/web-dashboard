@@ -119,7 +119,7 @@ export default function GameListSection({
               variant='secondary'
               size='sm'
               onClick={() => {
-                router.push(`/status-board/${row.original.id}`);
+                window.open(`/status-board/${row.original.id}`, '_blank');
               }}
             >
               현황판
