@@ -36,6 +36,8 @@ import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 import {
   GameTableRestResponse,
   GameStructureTemplateRestResponse,
@@ -96,7 +98,7 @@ export default function GameCreationInfoSection({
           game_type_id: initialData.game_type_id,
           mode: initialData.mode,
           store_id: initialData.store_id,
-          scheduled_at: new Date(initialData.scheduled_at),
+          scheduled_at: dayjs.utc(initialData.scheduled_at).local().toDate(),
           status: initialData.status,
           buy_in_amount: initialData.buy_in_amount,
           reg_close_level: initialData.reg_close_level,
@@ -133,7 +135,7 @@ export default function GameCreationInfoSection({
         game_type_id: initialData.game_type_id,
         mode: initialData.mode,
         store_id: initialData.store_id,
-        scheduled_at: new Date(initialData.scheduled_at),
+        scheduled_at: dayjs.utc(initialData.scheduled_at).local().toDate(),
         status: initialData.status,
         buy_in_amount: initialData.buy_in_amount,
         reg_close_level: initialData.reg_close_level,
@@ -176,11 +178,6 @@ export default function GameCreationInfoSection({
         return;
       }
 
-      // 날짜 포맷팅 (밀리초와 Z 제거)
-      const formattedDate = dayjs(data.scheduled_at).format(
-        'YYYY-MM-DDTHH:mm:ss[Z]'
-      );
-
       if (initialData) {
         // 수정 시에는 UpdateGameRestRequest 타입에 맞춤
         const updateRequest: UpdateGameRestRequest = {
@@ -195,7 +192,9 @@ export default function GameCreationInfoSection({
           break_time: data.break_time,
           structure_template_id: data.structure_template_id,
           structures: selectedStructureTemplate.structures,
-          scheduled_at: formattedDate,
+          scheduled_at: dayjs(data.scheduled_at)
+            .utc()
+            .format('YYYY-MM-DDTHH:mm:ss[Z]'),
           prize: data.prize
         };
 
@@ -214,7 +213,9 @@ export default function GameCreationInfoSection({
           break_time: data.break_time,
           structure_template_id: data.structure_template_id,
           structures: selectedStructureTemplate.structures,
-          scheduled_at: formattedDate,
+          scheduled_at: dayjs(data.scheduled_at)
+            .utc()
+            .format('YYYY-MM-DDTHH:mm:ss[Z]'),
           status: 'WAITING', // 생성 시에는 항상 '대기중'으로 설정
           prize: data.prize
         };
