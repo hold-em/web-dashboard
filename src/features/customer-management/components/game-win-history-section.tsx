@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Section, SectionContent, SectionTitle } from '@/components/section';
-import { User, GameWinHistory, mockGameWinHistories } from '@/mocks/users';
+import { GameWinHistory, mockGameWinHistories } from '@/mocks/users';
 import {
   ColumnDef,
   flexRender,
@@ -16,6 +16,7 @@ import {
   TableRow
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
+import { UserResponse } from '@/lib/api/types.gen';
 
 const columns: ColumnDef<GameWinHistory>[] = [
   {
@@ -40,7 +41,7 @@ const columns: ColumnDef<GameWinHistory>[] = [
 ];
 
 interface GameWinHistorySectionProps {
-  user: User;
+  user: UserResponse;
 }
 
 export default function GameWinHistorySection({

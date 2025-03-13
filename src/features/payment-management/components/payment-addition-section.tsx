@@ -31,7 +31,6 @@ import {
 import { ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { v4 as uuid } from 'uuid';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Input } from '@/components/ui/input';
 import { UserResponse } from '@/lib/api/types.gen';
 
@@ -49,6 +48,14 @@ export default function PaymentAdditionSection({
   users,
   addPaymentHistory
 }: PaymentAdditionSectionProps) {
+  // 각 결제 수단별 금액 상태 관리
+  const [paymentAmounts, setPaymentAmounts] = useState<Record<string, string>>({
+    카드: '',
+    현금: '',
+    이용권: '',
+    미수: ''
+  });
+
   const form = useForm<PaymentFormData>({
     resolver: zodResolver(paymentSchema),
     mode: 'onChange',
@@ -63,14 +70,26 @@ export default function PaymentAdditionSection({
     null
   );
 
+  // 결제 수단별 금액 변경 핸들러
+  const handleAmountChange = (method: string, value: string) => {
+    setPaymentAmounts((prev) => ({
+      ...prev,
+      [method]: value
+    }));
+  };
+
   const onSubmit: SubmitHandler<PaymentFormData> = (data) => {
+    // 선택된 결제 수단의 금액 가져오기
+    const amount = paymentAmounts[data.payment_method];
+
     const newPaymentHistory: PaymentHistory = {
       id: uuid(),
       user_id: data.user_id,
       product_id: data.product_id,
       payment_method: data.payment_method,
       date: new Date().toISOString(),
-      status: '대기'
+      status: '대기',
+      amount: amount ? parseInt(amount) : 0 // 금액 추가
     };
     addPaymentHistory(newPaymentHistory);
     form.reset({
@@ -79,6 +98,13 @@ export default function PaymentAdditionSection({
       user_id: ''
     });
     setSelectedCustomer(null);
+    // 결제 금액 초기화
+    setPaymentAmounts({
+      카드: '',
+      현금: '',
+      이용권: '',
+      미수: ''
+    });
   };
 
   return (
@@ -156,26 +182,26 @@ export default function PaymentAdditionSection({
                 <FormItem className='space-y-3'>
                   <FormLabel>결제 항목</FormLabel>
                   <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className='flex flex-col space-y-1'
-                    >
+                    <div className='grid gap-4'>
                       {products.map((product) => (
                         <div
                           key={product.id}
                           className='flex items-center space-x-3 space-y-0'
+                          onClick={() => field.onChange(product.id)}
                         >
-                          <RadioGroupItem value={product.id} id={product.id} />
-                          <FormLabel
-                            htmlFor={product.id}
-                            className='cursor-pointer font-normal'
+                          <div
+                            className={cn(
+                              'flex-1 cursor-pointer rounded-md border p-3',
+                              field.value === product.id
+                                ? 'border-primary bg-primary/10'
+                                : 'border-input'
+                            )}
                           >
-                            {product.name} ({product.price.toLocaleString()}원)
-                          </FormLabel>
+                            {product.name}
+                          </div>
                         </div>
                       ))}
-                    </RadioGroup>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -187,21 +213,31 @@ export default function PaymentAdditionSection({
               name='payment_method'
               render={({ field }) => (
                 <FormItem className='space-y-3'>
-                  <FormLabel>결제 수단</FormLabel>
+                  <FormLabel>결제 수단 및 금액</FormLabel>
                   <FormControl>
-                    <div className='flex flex-wrap gap-2'>
+                    <div className='space-y-4'>
                       {paymentMethods.map((method) => (
-                        <Button
-                          key={method}
-                          type='button'
-                          variant={
-                            field.value === method ? 'default' : 'outline'
-                          }
-                          onClick={() => field.onChange(method)}
-                          className='flex-1'
-                        >
-                          {method}
-                        </Button>
+                        <div key={method} className='flex items-center gap-3'>
+                          <Button
+                            type='button'
+                            variant={
+                              field.value === method ? 'default' : 'outline'
+                            }
+                            onClick={() => field.onChange(method)}
+                            className='w-24'
+                          >
+                            {method}
+                          </Button>
+                          <Input
+                            type='number'
+                            placeholder='금액'
+                            value={paymentAmounts[method]}
+                            onChange={(e) =>
+                              handleAmountChange(method, e.target.value)
+                            }
+                            className='flex-1'
+                          />
+                        </div>
                       ))}
                     </div>
                   </FormControl>

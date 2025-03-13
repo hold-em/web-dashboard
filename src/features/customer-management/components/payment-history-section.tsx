@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Section, SectionContent, SectionTitle } from '@/components/section';
-import { User, mockPaymentHistories, PaymentHistory } from '@/mocks/users';
+import { mockPaymentHistories, PaymentHistory } from '@/mocks/users';
 import {
   ColumnDef,
   flexRender,
@@ -16,6 +16,7 @@ import {
   TableRow
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
+import { UserResponse } from '@/lib/api/types.gen';
 
 const paymentColumns: ColumnDef<PaymentHistory>[] = [
   {
@@ -45,7 +46,7 @@ const paymentColumns: ColumnDef<PaymentHistory>[] = [
 ];
 
 interface PaymentHistorySectionProps {
-  user: User;
+  user: UserResponse;
 }
 
 export default function PaymentHistorySection({

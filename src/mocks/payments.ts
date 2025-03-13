@@ -34,6 +34,7 @@ export interface PaymentHistory {
   date: string;
   status: string;
   memo?: string;
+  amount?: number;
 }
 
 export const mockPaymentHistories: PaymentHistory[] = [
@@ -76,4 +77,5 @@ export interface PaymentHistoryItem {
   status: string;
   payment_method: string;
   memo?: string;
+  amount?: number;
 }

@@ -97,10 +97,20 @@ export default function PaymentListSection({
       },
       {
         accessorKey: 'price',
-        header: '금액',
+        header: '상품 금액',
         cell: ({ row }) => (
           <div>{Number(row.getValue('price')).toLocaleString()}원</div>
         )
+      },
+      {
+        accessorKey: 'amount',
+        header: '결제 금액',
+        cell: ({ row }) => {
+          const amount = row.getValue('amount');
+          return (
+            <div>{amount ? Number(amount).toLocaleString() + '원' : '-'}</div>
+          );
+        }
       },
       {
         accessorKey: 'payment_method',

@@ -2,13 +2,13 @@ import BasicInfoSection from './basic-info-section';
 import PageContainer from '@/components/layout/page-container';
 import { SectionTopToolbar } from '@/components/section';
 import { Button } from '@/components/ui/button';
-import { User } from '@/mocks/users';
+import { UserResponse } from '@/lib/api/types.gen';
 import { Icons } from '@/components/icons';
 import GameWinHistorySection from './game-win-history-section';
 import PaymentHistorySection from './payment-history-section';
 
 interface CustomerDetailViewProps {
-  user: User;
+  user: UserResponse;
   goBack: () => void;
 }
 

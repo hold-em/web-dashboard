@@ -6,8 +6,8 @@ import { toast } from 'sonner';
 
 interface BasicInfoSectionProps {
   user: UserResponse;
-  storeId: string;
-  normalUserId: string;
+  storeId?: string;
+  normalUserId?: string;
 }
 
 export default function BasicInfoSection({
@@ -26,6 +26,8 @@ export default function BasicInfoSection({
   ];
 
   const handleMergeMember = () => {
+    if (!storeId || !normalUserId) return;
+
     mergeMember(
       {
         storeId,
@@ -61,7 +63,7 @@ export default function BasicInfoSection({
             </div>
           ))}
         </div>
-        {user.type === 'TEMP' && (
+        {user.type === 'TEMP' && storeId && normalUserId && (
           <div className='mt-4'>
             <Button onClick={handleMergeMember} disabled={isMerging}>
               {isMerging ? '정회원 연동 중...' : '정회원 연동'}

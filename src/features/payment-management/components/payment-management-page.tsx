@@ -48,16 +48,17 @@ export default function PaymentManagementPage() {
       const user = users.find((user) => user.id === item.user_id);
       return {
         id: item.id,
-        user_id: item.user_id, // user_id 필드 추가
+        user_id: item.user_id,
         user_name: user ? user.name : '알 수 없음',
         price:
           products.find((paymentItem) => paymentItem.id === item.product_id)
             ?.price || 0,
-        product_id: item.product_id, // product_id 필드 추가
+        product_id: item.product_id,
         date: new Date(item.date).toISOString().split('T')[0],
         status: item.status,
         payment_method: item.payment_method,
-        memo: item.memo
+        memo: item.memo,
+        amount: item.amount
       };
     }
   );
