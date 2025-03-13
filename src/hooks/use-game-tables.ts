@@ -11,6 +11,7 @@ import type {
   UpdateGameTableRestRequest,
   ChangeGameTableParticipantsRestRequest
 } from '@/lib/api';
+import { toast } from 'sonner';
 
 export function useGameTables(gameId?: string) {
   const queryClient = useQueryClient();
@@ -46,6 +47,10 @@ export function useGameTables(gameId?: string) {
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['gameTables', gameId] });
+        toast.success('테이블이 생성되었습니다.');
+      },
+      onError: () => {
+        toast.error('테이블 생성에 실패했습니다.');
       }
     });
 
@@ -69,6 +74,10 @@ export function useGameTables(gameId?: string) {
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['gameTables', gameId] });
+        toast.success('테이블이 수정되었습니다.');
+      },
+      onError: () => {
+        toast.error('테이블 수정에 실패했습니다.');
       }
     });
 
@@ -94,6 +103,10 @@ export function useGameTables(gameId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['gameTables', gameId] });
+      toast.success('참가자가 변경되었습니다.');
+    },
+    onError: () => {
+      toast.error('참가자 변경에 실패했습니다.');
     }
   });
 
@@ -114,6 +127,10 @@ export function useGameTables(gameId?: string) {
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['gameTables', gameId] });
+        toast.success('테이블이 삭제되었습니다.');
+      },
+      onError: () => {
+        toast.error('테이블 삭제에 실패했습니다.');
       }
     });
 

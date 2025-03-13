@@ -11,10 +11,12 @@ import { GameTableRestResponse } from '@/lib/api';
 
 export default function DroppableTable({
   table,
-  users
+  users,
+  onDelete
 }: {
   table: GameTableRestResponse;
   users: User[];
+  onDelete: () => void;
 }) {
   const { setNodeRef } = useDroppable({
     id: table.id,
@@ -22,24 +24,23 @@ export default function DroppableTable({
   });
   const capacity = table.max_players;
   const count = table.participants?.length ?? 0;
-  let bgColor = '';
-  if (count === 0) {
-    bgColor = 'bg-gray-200';
-  } else if (count < capacity / 2) {
-    bgColor = 'bg-green-200';
-  } else if (count < capacity) {
-    bgColor = 'bg-yellow-200';
-  } else {
-    bgColor = 'bg-red-200';
-  }
+
   return (
     <li
       ref={setNodeRef}
       id={table.id}
-      className={`min-h-[200px] rounded-sm border border-gray-200 p-4 ${bgColor} ${count >= capacity ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+      className={`min-h-[200px] rounded-sm border border-gray-200 p-4 ${count >= capacity ? 'cursor-not-allowed' : 'cursor-pointer'}`}
     >
       <div className='h-full w-full'>
-        <div className='font-bold'>{table.name}</div>
+        <div className='flex items-center justify-between'>
+          <div className='font-bold'>{table.name}</div>
+          <button
+            onClick={onDelete}
+            className='rounded-sm p-1 text-gray-500 hover:bg-gray-300 hover:text-gray-700'
+          >
+            <Icons.trash size={16} />
+          </button>
+        </div>
         <div className='mt-2 flex items-center gap-1'>
           <Icons.users size={16} />
           <div>
