@@ -9,6 +9,7 @@ import type {
   CreateGameStructureTemplateRestRequest,
   UpdateGameStructureTemplateRestRequest
 } from '@/lib/api';
+import { toast } from 'sonner';
 
 export function useGameTemplates() {
   const queryClient = useQueryClient();
@@ -47,6 +48,14 @@ export function useGameTemplates() {
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['gameStructureTemplates'] });
+        toast.success('게임 템플릿 생성 완료', {
+          description: '새로운 게임 템플릿이 생성되었습니다.'
+        });
+      },
+      onError: () => {
+        toast.error('게임 템플릿 생성 실패', {
+          description: '게임 템플릿 생성 중 오류가 발생했습니다.'
+        });
       }
     });
 
@@ -68,6 +77,14 @@ export function useGameTemplates() {
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['gameStructureTemplates'] });
+        toast.success('게임 템플릿 수정 완료', {
+          description: '게임 템플릿 정보가 수정되었습니다.'
+        });
+      },
+      onError: () => {
+        toast.error('게임 템플릿 수정 실패', {
+          description: '게임 템플릿 수정 중 오류가 발생했습니다.'
+        });
       }
     });
 

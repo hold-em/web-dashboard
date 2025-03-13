@@ -12,6 +12,7 @@ import {
 } from '@/lib/api/types.gen';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+
 export function useGameTypes() {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -36,6 +37,11 @@ export function useGameTypes() {
         toast.success('게임 타입이 생성되었습니다.');
         queryClient.invalidateQueries({ queryKey: ['gameTypes'] });
         router.push('/dashboard/game-type-management');
+      },
+      onError: () => {
+        toast.error('게임 타입 생성 실패', {
+          description: '게임 타입 생성 중 오류가 발생했습니다.'
+        });
       }
     }
   );
@@ -59,6 +65,11 @@ export function useGameTypes() {
         toast.success('게임 타입이 수정되었습니다.');
         queryClient.invalidateQueries({ queryKey: ['gameTypes'] });
         router.push('/dashboard/game-type-management');
+      },
+      onError: () => {
+        toast.error('게임 타입 수정 실패', {
+          description: '게임 타입 수정 중 오류가 발생했습니다.'
+        });
       }
     }
   );
@@ -74,6 +85,11 @@ export function useGameTypes() {
       onSuccess: () => {
         toast.success('게임 타입이 삭제되었습니다.');
         queryClient.invalidateQueries({ queryKey: ['gameTypes'] });
+      },
+      onError: () => {
+        toast.error('게임 타입 삭제 실패', {
+          description: '게임 타입 삭제 중 오류가 발생했습니다.'
+        });
       }
     }
   );

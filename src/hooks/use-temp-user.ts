@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createTempUser, mergeTempUser } from '@/lib/api';
+import { toast } from 'sonner';
 import type {
   UserResponse,
   CreateTempUserInStoreRestRequest
@@ -35,6 +36,14 @@ export function useTempUser() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('임시 회원 생성 완료', {
+        description: '새로운 임시 회원이 추가되었습니다.'
+      });
+    },
+    onError: () => {
+      toast.error('임시 회원 생성 실패', {
+        description: '임시 회원 생성 중 오류가 발생했습니다.'
+      });
     }
   });
 
@@ -58,6 +67,14 @@ export function useTempUser() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('정회원 연동 완료', {
+        description: '임시회원이 정회원으로 연동되었습니다.'
+      });
+    },
+    onError: () => {
+      toast.error('정회원 연동 실패', {
+        description: '임시회원 연동 중 오류가 발생했습니다.'
+      });
     }
   });
 

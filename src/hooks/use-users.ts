@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getList, makeManager } from '@/lib/api';
+import { toast } from 'sonner';
 
 export function useUsers() {
   const queryClient = useQueryClient();
@@ -23,6 +24,14 @@ export function useUsers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('관리자 임명 완료', {
+        description: '사용자가 관리자로 임명되었습니다.'
+      });
+    },
+    onError: () => {
+      toast.error('관리자 임명 실패', {
+        description: '관리자 임명 중 오류가 발생했습니다.'
+      });
     }
   });
 
@@ -40,6 +49,14 @@ export function useUsers() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast.success('사용자 삭제 완료', {
+        description: '사용자가 삭제되었습니다.'
+      });
+    },
+    onError: () => {
+      toast.error('사용자 삭제 실패', {
+        description: '사용자 삭제 중 오류가 발생했습니다.'
+      });
     }
   });
 

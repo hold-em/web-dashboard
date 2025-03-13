@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getGames, createGame, updateGame, getGame } from '@/lib/api';
 import type { CreateGameRestRequest, UpdateGameRestRequest } from '@/lib/api';
 import { useSelectedStore } from './use-selected-store';
+import { toast } from 'sonner';
 
 export function useGames(gameId?: string) {
   const queryClient = useQueryClient();
@@ -44,9 +45,14 @@ export function useGames(gameId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['games'] });
+      toast.success('게임 생성 완료', {
+        description: '새로운 게임이 생성되었습니다.'
+      });
     },
-    onError: (error) => {
-      console.error(error);
+    onError: () => {
+      toast.error('게임 생성 실패', {
+        description: '게임 생성 중 오류가 발생했습니다.'
+      });
     }
   });
 
@@ -67,6 +73,14 @@ export function useGames(gameId?: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['games'] });
+      toast.success('게임 수정 완료', {
+        description: '게임 정보가 수정되었습니다.'
+      });
+    },
+    onError: () => {
+      toast.error('게임 수정 실패', {
+        description: '게임 수정 중 오류가 발생했습니다.'
+      });
     }
   });
 

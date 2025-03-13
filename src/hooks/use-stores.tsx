@@ -3,6 +3,7 @@ import { createStore, updateStore, getCreatedStores } from '@/lib/api';
 import type { CreateStoreRestRequest, UpdateStoreRestRequest } from '@/lib/api';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+
 export const useStores = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -41,6 +42,11 @@ export const useStores = () => {
       toast.success('매장이 성공적으로 생성되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['stores'] });
       router.push('/dashboard/store-management');
+    },
+    onError: () => {
+      toast.error('매장 생성 실패', {
+        description: '매장 생성 중 오류가 발생했습니다.'
+      });
     }
   });
 
@@ -69,6 +75,11 @@ export const useStores = () => {
       toast.success('매장 정보가 성공적으로 수정되었습니다.');
       queryClient.invalidateQueries({ queryKey: ['stores'] });
       router.push('/dashboard/store-management');
+    },
+    onError: () => {
+      toast.error('매장 정보 수정 실패', {
+        description: '매장 정보 수정 중 오류가 발생했습니다.'
+      });
     }
   });
 
