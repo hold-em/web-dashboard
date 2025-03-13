@@ -4,8 +4,12 @@ import StatItem from '../common/StatItem';
 
 interface StatsSectionProps {
   stats: {
-    regCloseTime: string;
-    nextBreak: string;
+    regCloseTime: {
+      time: string;
+    };
+    nextBreak: {
+      time: string;
+    };
     players: string;
     rebuyEarly: string;
     totalChips: string;
@@ -30,8 +34,12 @@ export default function StatsSection({ stats }: StatsSectionProps) {
         height={286}
         className='absolute left-0 top-0'
       />
-      <StatItem label='REG CLOSE TIME' value={stats.regCloseTime} isFirst />
-      <StatItem label='NEXT BREAK' value={stats.nextBreak} />
+      <StatItem
+        label='REG CLOSE TIME'
+        value={stats.regCloseTime.time}
+        isFirst
+      />
+      <StatItem label='NEXT BREAK' value={stats.nextBreak.time} />
       <StatItem label='PLAYERS' value={stats.players} />
       <StatItem label='RE-BUY / EARLY' value={stats.rebuyEarly} />
       <StatItem label='TOTAL CHIPS' value={stats.totalChips} />

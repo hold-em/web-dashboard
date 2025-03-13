@@ -1,11 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { getGame, getStore } from '@/lib/api';
-import { addMinutes, format, intervalToDuration } from 'date-fns';
+import {
+  addMinutes,
+  format,
+  intervalToDuration,
+  isBefore,
+  Duration
+} from 'date-fns';
 import {
   TemplateData,
   GameItem
 } from '@/features/game-management/types/game-structure';
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 
 // Types
 export interface PrizeValues {
@@ -23,6 +29,8 @@ export interface StatusBoardInfo {
   gameName: string;
   currentLevel: number;
   remainingTime: string;
+  currentLevelEndTime: Date;
+  isBeforeStart?: boolean;
   blinds: {
     sb: number;
     bb: number;
@@ -34,8 +42,12 @@ export interface StatusBoardInfo {
     blinds: string;
   };
   stats: {
-    regCloseTime: string;
-    nextBreak: string;
+    regCloseTime: {
+      time: string;
+    };
+    nextBreak: {
+      time: string;
+    };
     players: string;
     rebuyEarly: string;
     totalChips: string;
@@ -65,10 +77,47 @@ function savePrizeValues(gameId: string, values: PrizeValues) {
   localStorage.setItem(`${STORAGE_KEY}_${gameId}`, JSON.stringify(values));
 }
 
+function formatDuration(duration: Duration): string {
+  const minutes = duration.minutes ?? 0;
+  const seconds = duration.seconds ?? 0;
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+function calculateLevelStartTime(
+  gameStartTime: Date,
+  items: GameItem[],
+  targetIndex: number
+): Date {
+  let totalMinutes = 0;
+  for (let i = 0; i < targetIndex; i++) {
+    const item = items[i];
+    totalMinutes +=
+      item.type === 'break' ? (item.breakDuration ?? 0) : (item.duration ?? 0);
+  }
+  return addMinutes(gameStartTime, totalMinutes);
+}
+
+function findNextBreakIndex(items: GameItem[], currentIndex: number): number {
+  return items
+    .slice(currentIndex + 1)
+    .findIndex((item) => item.type === 'break');
+}
+
+function calculateMinutesUntil(from: Date, to: Date): number {
+  return Math.max(0, Math.floor((to.getTime() - from.getTime()) / (60 * 1000)));
+}
+
 export function useStatusBoard(gameId: string) {
   const [prizeValues, setPrizeValues] = useState<PrizeValues>(() =>
     getPrizeValues(gameId)
   );
+  const [remainingTime, setRemainingTime] = useState<string>('00:00');
+  const [regCloseTime, setRegCloseTime] = useState<string>('00:00');
+  const [nextBreakTime, setNextBreakTime] = useState<string>('00:00');
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const currentLevelEndTimeRef = useRef<Date | null>(null);
+  const regCloseTimeRef = useRef<Date | null>(null);
+  const nextBreakTimeRef = useRef<Date | null>(null);
 
   useEffect(() => {
     setPrizeValues(getPrizeValues(gameId));
@@ -113,33 +162,119 @@ export function useStatusBoard(gameId: string) {
       if (!game || !store) return null;
 
       const now = new Date();
+      console.log('🚀 ~ statusBoard ~ now:', now);
       const gameStartTime = new Date(game.scheduled_at);
+      console.log('🚀 ~ statusBoard ~ gameStartTime:', gameStartTime);
+
+      // 게임 시작 전인지 확인
+      const isBeforeStart = isBefore(now, gameStartTime);
+      if (isBeforeStart) {
+        // 시작까지 남은 시간 계산
+        const duration = intervalToDuration({
+          start: now,
+          end: gameStartTime
+        });
+
+        return {
+          storeName: store.name,
+          gameName: '임시 게임 이름',
+          currentLevel: 1,
+          remainingTime: formatDuration(duration),
+          currentLevelEndTime: gameStartTime,
+          isBeforeStart: true,
+          blinds: {
+            sb: 0,
+            bb: 0,
+            ante: 0
+          },
+          nextLevel: {
+            regClose: 0,
+            name: '--',
+            blinds: '--'
+          },
+          stats: {
+            regCloseTime: {
+              time: '--:--'
+            },
+            nextBreak: {
+              time: '--:--'
+            },
+            players: `${game.max_players ?? 0} / ${game.max_players ?? 0}`,
+            rebuyEarly: `${game.reentry_chips ?? 0} / ${game.early_chips ?? 0}`,
+            totalChips: (game.starting_chips ?? 0).toLocaleString(),
+            avgStack: Math.floor(game.starting_chips ?? 0).toLocaleString()
+          }
+        };
+      }
+
       const gameStructure = JSON.parse(game.structures) as TemplateData;
-      const firstLevel = gameStructure.items[0] as GameItem;
+      const items = gameStructure.items;
 
-      if (!firstLevel.duration) return null;
+      // 현재 레벨 찾기
+      let currentLevelIndex = 0;
+      let accumulatedMinutes = 0;
 
-      const levelDurationMinutes = firstLevel.duration;
-      const elapsedMinutes =
-        (now.getTime() - gameStartTime.getTime()) / (60 * 1000);
-      const currentLevelIndex = Math.max(
-        0,
-        Math.min(
-          Math.floor(elapsedMinutes / levelDurationMinutes),
-          gameStructure.items.length - 1
-        )
-      );
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const duration =
+          item.type === 'break'
+            ? (item.breakDuration ?? 0)
+            : (item.duration ?? 0);
 
-      // 현재 레벨의 시작 시간
-      const currentLevelStartTime = addMinutes(
+        if (
+          accumulatedMinutes + duration >
+          (now.getTime() - gameStartTime.getTime()) / (60 * 1000)
+        ) {
+          currentLevelIndex = i;
+          break;
+        }
+
+        accumulatedMinutes += duration;
+        if (i === items.length - 1) {
+          currentLevelIndex = i;
+        }
+      }
+
+      const currentLevel = items[currentLevelIndex] as GameItem;
+      const nextLevel = items[currentLevelIndex + 1] as GameItem | undefined;
+
+      if (!currentLevel) return null;
+
+      // 현재 레벨의 시작 시간과 종료 시간 계산
+      const currentLevelStartTime = calculateLevelStartTime(
         gameStartTime,
-        currentLevelIndex * levelDurationMinutes
+        items,
+        currentLevelIndex
       );
-      // 다음 레벨의 시작 시간
+      const currentLevelDuration =
+        currentLevel.type === 'break'
+          ? (currentLevel.breakDuration ?? 0)
+          : (currentLevel.duration ?? 0);
       const nextLevelStartTime = addMinutes(
         currentLevelStartTime,
-        levelDurationMinutes
+        currentLevelDuration
       );
+
+      // REG CLOSE TIME 계산
+      const regCloseLevelIndex = (game.reg_close_level ?? 1) - 1;
+      const regCloseDateTime = calculateLevelStartTime(
+        gameStartTime,
+        items,
+        regCloseLevelIndex
+      );
+      regCloseTimeRef.current = regCloseDateTime;
+
+      // NEXT BREAK 계산
+      const nextBreakIdx = findNextBreakIndex(items, currentLevelIndex);
+      const nextBreakDateTime =
+        nextBreakIdx !== -1
+          ? calculateLevelStartTime(
+              gameStartTime,
+              items,
+              currentLevelIndex + 1 + nextBreakIdx
+            )
+          : null;
+      nextBreakTimeRef.current = nextBreakDateTime;
 
       // 남은 시간 계산
       const duration = intervalToDuration({
@@ -147,58 +282,46 @@ export function useStatusBoard(gameId: string) {
         end: nextLevelStartTime
       });
 
-      const currentLevel = gameStructure.items[currentLevelIndex] as GameItem;
-      const nextLevel = gameStructure.items[currentLevelIndex + 1] as
-        | GameItem
-        | undefined;
-
-      if (!currentLevel) return null;
-
       const totalChips = (game.starting_chips ?? 0) * (game.max_players ?? 0);
+
+      // 현재 레벨의 종료 시간 저장
+      currentLevelEndTimeRef.current = nextLevelStartTime;
 
       return {
         storeName: store.name,
         gameName: '임시 게임 이름',
-        currentLevel: currentLevelIndex + 1,
-        remainingTime: `${duration.minutes?.toString().padStart(2, '0') ?? '00'}:${
-          duration.seconds?.toString().padStart(2, '0') ?? '00'
-        }`,
+        currentLevel: currentLevel.level ?? currentLevelIndex + 1,
+        remainingTime: formatDuration(duration),
+        currentLevelEndTime: nextLevelStartTime,
+        isBeforeStart: false,
         blinds: {
-          sb: currentLevel.sb ?? 0,
-          bb: currentLevel.bb ?? 0,
-          ante: currentLevel.entry ?? 0
+          sb: currentLevel.type === 'game' ? (currentLevel.sb ?? 0) : 0,
+          bb: currentLevel.type === 'game' ? (currentLevel.bb ?? 0) : 0,
+          ante: currentLevel.type === 'game' ? (currentLevel.entry ?? 0) : 0
         },
         nextLevel: {
           regClose: game.reg_close_level ?? 0,
           name:
             nextLevel?.type === 'break'
               ? 'BREAK'
-              : `LEVEL ${currentLevelIndex + 2}`,
+              : `LEVEL ${nextLevel?.level ?? currentLevelIndex + 2}`,
           blinds: nextLevel
             ? nextLevel.type === 'break'
               ? '-'
-              : `${nextLevel.sb ?? 0}/${nextLevel.bb ?? 0}(${nextLevel.entry ?? 0})`
+              : `${nextLevel.sb ?? 0}/${nextLevel.bb ?? 0}${
+                  nextLevel.entry ? ` (${nextLevel.entry})` : ''
+                }`
             : 'FINAL'
         },
         stats: {
-          regCloseTime: format(
-            addMinutes(
-              gameStartTime,
-              ((game.reg_close_level ?? 1) - 1) * levelDurationMinutes
-            ),
-            'HH:mm:ss'
-          ),
-          nextBreak: format(
-            addMinutes(
-              gameStartTime,
-              (gameStructure.items.findIndex(
-                (item) =>
-                  item.type === 'break' &&
-                  gameStructure.items.indexOf(item) > currentLevelIndex
-              ) || 0) * levelDurationMinutes
-            ),
-            'HH:mm:ss'
-          ),
+          regCloseTime: {
+            time: format(regCloseDateTime, 'HH:mm:ss')
+          },
+          nextBreak: {
+            time: nextBreakDateTime
+              ? format(nextBreakDateTime, 'HH:mm:ss')
+              : '--:--:--'
+          },
           players: `${game.max_players ?? 0} / ${game.max_players ?? 0}`,
           rebuyEarly: `${game.reentry_chips ?? 0} / ${game.early_chips ?? 0}`,
           totalChips: totalChips.toLocaleString(),
@@ -212,8 +335,99 @@ export function useStatusBoard(gameId: string) {
     return game && store ? calculateStatusBoard() : null;
   }, [game, store]);
 
+  // 타이머 설정
+  useEffect(() => {
+    if (!statusBoard?.currentLevelEndTime) return;
+
+    const updateTimer = () => {
+      const now = new Date();
+      const gameStartTime = new Date(game?.scheduled_at ?? '');
+      const isBeforeStart = game ? isBefore(now, gameStartTime) : false;
+
+      if (isBeforeStart) {
+        // 게임 시작까지 남은 시간 표시
+        const duration = intervalToDuration({
+          start: now,
+          end: gameStartTime
+        });
+        setRemainingTime(formatDuration(duration));
+        setRegCloseTime('--:--');
+        setNextBreakTime('--:--');
+        return;
+      }
+
+      // 레벨 타이머 업데이트
+      if (currentLevelEndTimeRef.current) {
+        if (isBefore(currentLevelEndTimeRef.current, now)) {
+          setRemainingTime('00:00');
+        } else {
+          const duration = intervalToDuration({
+            start: now,
+            end: currentLevelEndTimeRef.current
+          });
+          setRemainingTime(formatDuration(duration));
+        }
+      }
+
+      // REG CLOSE TIME 업데이트
+      if (regCloseTimeRef.current) {
+        if (isBefore(regCloseTimeRef.current, now)) {
+          setRegCloseTime('00:00');
+        } else {
+          const duration = intervalToDuration({
+            start: now,
+            end: regCloseTimeRef.current
+          });
+          setRegCloseTime(formatDuration(duration));
+        }
+      }
+
+      // NEXT BREAK 업데이트
+      if (nextBreakTimeRef.current) {
+        if (isBefore(nextBreakTimeRef.current, now)) {
+          setNextBreakTime('00:00');
+        } else {
+          const duration = intervalToDuration({
+            start: now,
+            end: nextBreakTimeRef.current
+          });
+          setNextBreakTime(formatDuration(duration));
+        }
+      }
+    };
+
+    // 초기 타이머 설정
+    updateTimer();
+
+    // 1초마다 타이머 업데이트
+    timerRef.current = setInterval(updateTimer, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [statusBoard?.currentLevelEndTime, game]);
+
   return {
-    statusBoard,
+    statusBoard: statusBoard
+      ? {
+          ...statusBoard,
+          remainingTime,
+          isBeforeStart: statusBoard.isBeforeStart,
+          stats: {
+            ...statusBoard.stats,
+            regCloseTime: {
+              ...statusBoard.stats.regCloseTime,
+              time: regCloseTime
+            },
+            nextBreak: {
+              ...statusBoard.stats.nextBreak,
+              time: nextBreakTime
+            }
+          }
+        }
+      : null,
     isLoading: isGameLoading || isStoreLoading,
     prizeValues,
     handlePrizeChange

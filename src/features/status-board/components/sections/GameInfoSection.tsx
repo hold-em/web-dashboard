@@ -16,6 +16,7 @@ interface GameInfoSectionProps {
     name: string;
     blinds: string;
   };
+  isBeforeStart?: boolean;
 }
 
 const SECTION_STYLE = 'overflow-hidden rounded-[24px] bg-[#236437]/50';
@@ -26,7 +27,8 @@ export default function GameInfoSection({
   currentLevel,
   remainingTime,
   blinds,
-  nextLevel
+  nextLevel,
+  isBeforeStart
 }: GameInfoSectionProps) {
   return (
     <div
@@ -38,13 +40,13 @@ export default function GameInfoSection({
       <div className='text-[32px] font-semibold leading-[140%] tracking-[-0.025em] text-white/70'>
         {storeName}
       </div>
-      <div className='flex items-center gap-[20px] text-[48px] font-semibold leading-[140%] tracking-[-0.025em] text-white'>
+      <div className='flex justify-center gap-[20px] text-[48px] font-semibold leading-[140%] tracking-[-0.025em] text-white'>
         <StarIcon />
         {gameName}
         <StarIcon />
       </div>
       <div className='mt-[16px] flex h-[84px] items-center justify-center rounded-full bg-white/10 text-[54px] font-bold leading-none tracking-[-0.025em] text-white'>
-        LEVEL {currentLevel}
+        {isBeforeStart ? 'BEFORE START' : `LEVEL ${currentLevel}`}
       </div>
       <div className='mt-[16px] text-[260px] font-extrabold leading-none tracking-[-0.025em] text-[#ffc700]'>
         {remainingTime}
@@ -55,17 +57,21 @@ export default function GameInfoSection({
             BLINDS
           </div>
           <div className='text-[60px] font-semibold leading-[140%] tracking-[-0.025em] text-white'>
-            {blinds.sb}/{blinds.bb}
+            {isBeforeStart
+              ? '--/--'
+              : `${blinds.sb.toLocaleString()}/${blinds.bb.toLocaleString()}`}
           </div>
         </div>
-        <div className='flex items-center justify-between'>
-          <div className='text-[54px] font-medium leading-[140%] tracking-[-0.025em] text-white/70'>
-            ANTE
+        {!isBeforeStart && blinds.ante > 0 && (
+          <div className='flex items-center justify-between'>
+            <div className='text-[54px] font-medium leading-[140%] tracking-[-0.025em] text-white/70'>
+              ANTE
+            </div>
+            <div className='text-[60px] font-semibold leading-[140%] tracking-[-0.025em] text-white'>
+              {blinds.ante.toLocaleString()}
+            </div>
           </div>
-          <div className='text-[60px] font-semibold leading-[140%] tracking-[-0.025em] text-white'>
-            {blinds.ante}
-          </div>
-        </div>
+        )}
       </div>
       <div className='mt-[18px] space-y-[16px] px-[80px] py-[12px]'>
         <div className='flex items-center justify-between'>
@@ -73,7 +79,7 @@ export default function GameInfoSection({
             REG CLOSE
           </div>
           <div className='text-[40px] font-medium leading-[100%] tracking-[-0.025em] text-white'>
-            {nextLevel.regClose}LV
+            {isBeforeStart ? '--' : `${nextLevel.regClose}LV`}
           </div>
         </div>
         <div className='flex items-center justify-between'>
@@ -81,7 +87,7 @@ export default function GameInfoSection({
             NEXT LEVEL
           </div>
           <div className='text-[40px] font-medium leading-[100%] tracking-[-0.025em] text-white'>
-            {nextLevel.name}
+            {isBeforeStart ? '--' : nextLevel.name}
           </div>
         </div>
         <div className='flex items-center justify-between'>
@@ -89,7 +95,7 @@ export default function GameInfoSection({
             NEXT BLINDS
           </div>
           <div className='text-[40px] font-medium leading-[100%] tracking-[-0.025em] text-white'>
-            {nextLevel.blinds}
+            {isBeforeStart ? '--' : nextLevel.blinds}
           </div>
         </div>
       </div>

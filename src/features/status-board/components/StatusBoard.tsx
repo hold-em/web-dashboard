@@ -64,6 +64,7 @@ export default function StatusBoard({ gameId }: StatusBoardProps) {
           remainingTime={statusBoard.remainingTime}
           blinds={statusBoard.blinds}
           nextLevel={statusBoard.nextLevel}
+          isBeforeStart={statusBoard.isBeforeStart}
         />
         <PrizeListSection
           prizeValues={prizeValues}
