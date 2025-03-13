@@ -21,12 +21,12 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { User } from '@/mocks/users';
 import { notificationSchema, NotificationFormData } from '../utils/form-schema';
+import { UserResponse } from '@/lib/api/types.gen';
 
 interface PushNotificationDialogProps {
   pushNotification: (text: string) => void;
-  checkedUsers: User[];
+  checkedUsers: UserResponse[];
   onClose?: () => void;
 }
 

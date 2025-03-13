@@ -43,11 +43,13 @@ const genderItems = [
 interface AddTemporaryMemberDialogProps {
   onSuccess?: () => void;
   onClose?: () => void;
+  addUser?: (user: UserResponse) => void;
 }
 
 export default function AddTemporaryMemberDialog({
   onSuccess,
-  onClose
+  onClose,
+  addUser
 }: AddTemporaryMemberDialogProps) {
   const [open, setOpen] = useState(false);
   const { createTemporaryUser, isCreating } = useTempUser();
@@ -74,11 +76,12 @@ export default function AddTemporaryMemberDialog({
         gender: data.gender
       },
       {
-        onSuccess: () => {
+        onSuccess: (response) => {
           setOpen(false);
           form.reset();
           if (onSuccess) onSuccess();
           if (onClose) onClose();
+          if (addUser && response?.data) addUser(response.data);
         }
       }
     );

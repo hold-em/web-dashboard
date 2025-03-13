@@ -34,19 +34,19 @@ import {
   TableRow
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
-import { User } from '@/mocks/users';
 import { PAGE_SIZE } from '@/constants/common';
+import { UserResponse } from '@/lib/api/types.gen';
 
 const statusItems = [
   { label: '전체', value: '' },
-  { label: '정회원', value: '정회원' },
-  { label: '임시회원', value: '임시회원' }
+  { label: '정회원', value: 'NORMAL' },
+  { label: '임시회원', value: 'TEMP' }
 ];
 
 interface CustomerListProps {
-  users: User[];
-  selectUser: (user: User) => void;
-  setCheckedUsers: (checkedUsers: User[]) => void;
+  users: UserResponse[];
+  selectUser: (user: UserResponse) => void;
+  setCheckedUsers: (checkedUsers: UserResponse[]) => void;
 }
 
 export default function CustomerListSection({
@@ -64,7 +64,7 @@ export default function CustomerListSection({
     React.useState<VisibilityState>({ created_at: false });
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const columns = React.useMemo<ColumnDef<User>[]>(
+  const columns = React.useMemo<ColumnDef<UserResponse>[]>(
     () => [
       {
         id: 'select',
@@ -96,31 +96,30 @@ export default function CustomerListSection({
         cell: ({ row }) => <div>{row.getValue('name')}</div>
       },
       {
-        accessorKey: 'phone',
+        accessorKey: 'phone_number',
         header: '전화번호',
-        cell: ({ row }) => <div>{row.getValue('phone')}</div>
+        cell: ({ row }) => <div>{row.getValue('phone_number')}</div>
       },
       {
-        accessorKey: 'email',
+        accessorKey: 'email_address',
         header: '이메일',
-        cell: ({ row }) => <div>{row.getValue('email')}</div>
+        cell: ({ row }) => <div>{row.getValue('email_address')}</div>
       },
       {
-        accessorKey: 'member_status',
-        header: '회원유형',
-        cell: ({ row }) => <div>{row.getValue('member_status')}</div>
+        accessorKey: 'type',
+        header: '회원 상태',
+        cell: ({ row }) => (
+          <div>{row.getValue('type') === 'NORMAL' ? '정회원' : '임시회원'}</div>
+        )
       },
       {
-        accessorKey: 'created_at',
-        header: '생성일',
-        cell: ({ row }) =>
-          new Date(row.getValue('created_at')).toLocaleString(),
-        enableHiding: true
+        accessorKey: 'created_by',
+        header: '가입일',
+        cell: ({ row }) => <div>{row.getValue('created_by')}</div>
       },
       {
         id: 'actions',
         enableHiding: false,
-        header: '관리',
         cell: ({ row }) => (
           <Button
             variant='secondary'
