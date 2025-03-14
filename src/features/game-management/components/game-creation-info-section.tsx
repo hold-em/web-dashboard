@@ -378,7 +378,9 @@ export default function GameCreationInfoSection({
                                 <SelectValue placeholder='분' />
                               </SelectTrigger>
                               <SelectContent>
-                                {[0, 15, 30, 45].map((minute) => (
+                                {[
+                                  0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55
+                                ].map((minute) => (
                                   <SelectItem
                                     key={minute}
                                     value={String(minute).padStart(2, '0')}
