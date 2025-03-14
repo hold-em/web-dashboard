@@ -13,7 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getStoreUsers } from '@/lib/api/sdk.gen';
 import { UserResponse, PayableItemRestResponse } from '@/lib/api/types.gen';
 import { usePayableItems } from '@/hooks/use-payable-items';
-import { usePayments } from '../utils/use-payments';
+import { usePayments } from '@/hooks/use-payments';
 
 type PageState = 'management' | 'product' | 'payment-detail';
 

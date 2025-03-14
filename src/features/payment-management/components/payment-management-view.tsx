@@ -8,7 +8,7 @@ import {
   PayableItemRestResponse,
   PaymentRestResponse
 } from '@/lib/api/types.gen';
-import { usePayments } from '../utils/use-payments';
+import { usePayments } from '@/hooks/use-payments';
 
 interface PaymentManagementViewProps {
   products: PayableItemRestResponse[];

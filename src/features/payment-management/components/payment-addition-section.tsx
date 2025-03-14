@@ -32,21 +32,9 @@ import { ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { UserResponse } from '@/lib/api/types.gen';
-import { usePayments, PaymentMethod } from '../utils/use-payments';
+import { usePayments, PaymentMethod } from '@/hooks/use-payments';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
-
-// 결제 수단 목록
-const paymentMethods = [
-  '카드',
-  'CARD',
-  '현금',
-  'CASH',
-  '이용권',
-  'VOUCHER',
-  '미수',
-  'UNPAID'
-] as const;
 
 // 결제 수단 매핑
 const paymentMethodMapping: Record<
@@ -121,39 +109,29 @@ export default function PaymentAdditionSection({
     }
 
     // API를 통해 결제 생성
-    createPayment(
-      {
-        userId: data.user_id,
-        payableItemId: data.product_id,
-        paymentMethods,
-        memo: data.memo || ''
-      },
-      {
-        onSuccess: () => {
-          toast.success('결제가 성공적으로 추가되었습니다.');
+    createPayment({
+      userId: data.user_id,
+      payableItemId: data.product_id,
+      paymentMethods,
+      memo: data.memo || ''
+    });
 
-          // 폼 초기화
-          form.reset({
-            product_id: '',
-            user_id: '',
-            payment_method: '',
-            memo: ''
-          });
-          setSelectedCustomer(null);
+    // 폼 초기화
+    form.reset({
+      product_id: '',
+      user_id: '',
+      payment_method: '',
+      memo: ''
+    });
+    setSelectedCustomer(null);
 
-          // 결제 금액 초기화
-          setPaymentAmounts({
-            카드: '',
-            현금: '',
-            이용권: '',
-            미수: ''
-          });
-        },
-        onError: (error) => {
-          toast.error('결제 추가 중 오류가 발생했습니다: ' + error.message);
-        }
-      }
-    );
+    // 결제 금액 초기화
+    setPaymentAmounts({
+      카드: '',
+      현금: '',
+      이용권: '',
+      미수: ''
+    });
   };
 
   return (

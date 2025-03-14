@@ -6,9 +6,10 @@ import {
   PaymentRestResponse,
   UserResponse,
   PayableItemRestResponse,
-  CreatePartialPaymentRestRequest
+  CreatePartialPaymentRestRequest,
+  UpdatePartialPaymentRestRequest
 } from '@/lib/api/types.gen';
-import { usePayments, PaymentMethod } from '../utils/use-payments';
+import { usePayments, PaymentMethod } from '@/hooks/use-payments';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -39,7 +40,6 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import CustomerSelect from './customer-select';
-import PaymentItemSelect from './payment-item-select';
 
 interface PaymentDetailPageProps {
   paymentId: string;
@@ -54,7 +54,8 @@ export default function PaymentDetailPage({
   users,
   products
 }: PaymentDetailPageProps) {
-  const { payments, updatePayment, cancelPayment } = usePayments();
+  const { payments, updatePayment, cancelPayment, isUpdating, isCancelling } =
+    usePayments();
   const [payment, setPayment] = useState<PaymentRestResponse | null>(null);
   const [memo, setMemo] = useState('');
   const [status, setStatus] = useState<'PENDING' | 'PAID'>('PENDING');
@@ -66,6 +67,9 @@ export default function PaymentDetailPage({
       amount: number;
       id?: string;
     }>
+  >([]);
+  const [removedPartialPaymentIds, setRemovedPartialPaymentIds] = useState<
+    string[]
   >([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -115,25 +119,43 @@ export default function PaymentDetailPage({
 
     setIsLoading(true);
     try {
-      // For the API, we need to use CreatePartialPaymentRestRequest
-      // We can't include the IDs here as the API expects a different format
-      const partialPayments: CreatePartialPaymentRestRequest[] =
-        paymentMethods.map((pm) => ({
-          payment_type: pm.type,
-          price: pm.amount,
-          status: 'PENDING'
-        }));
+      // 기존 부분 결제 ID를 유지하면서 업데이트
+      const partialPayments: UpdatePartialPaymentRestRequest[] =
+        paymentMethods.map((pm) => {
+          // payment_type 타입 호환성 문제 해결
+          let paymentType: 'CARD' | 'CASH' | 'TRANSFER' | 'VOUCHER';
+
+          if (pm.type === 'CARD') {
+            paymentType = 'CARD';
+          } else if (pm.type === 'CASH') {
+            paymentType = 'CASH';
+          } else {
+            paymentType = 'TRANSFER';
+          }
+
+          return {
+            id: pm.id, // 기존 ID 유지
+            payment_type: paymentType,
+            price: pm.amount,
+            status: 'PENDING'
+          };
+        });
 
       await updatePayment({
         paymentId,
         memo,
         status,
         payableItemId: selectedItemId,
-        partialPayments
+        partialPayments,
+        removedPartialPaymentIds // 제거된 부분 결제 ID 목록 전달
       });
-      toast.success('결제 정보가 업데이트되었습니다.');
+
+      // 저장 성공 후 제거된 부분 결제 ID 목록 초기화
+      setRemovedPartialPaymentIds([]);
+
+      // Toast is now handled in the hook
     } catch (error) {
-      toast.error('결제 정보 업데이트 중 오류가 발생했습니다.');
+      // Error toast is now handled in the hook
       console.error(error);
     } finally {
       setIsLoading(false);
@@ -147,15 +169,29 @@ export default function PaymentDetailPage({
       setIsLoading(true);
       try {
         await cancelPayment(paymentId);
-        toast.success('결제가 취소되었습니다.');
+        // Toast is now handled in the hook
         onBack();
       } catch (error) {
-        toast.error('결제 취소 중 오류가 발생했습니다.');
+        // Error toast is now handled in the hook
         console.error(error);
       } finally {
         setIsLoading(false);
       }
     }
+  };
+
+  const addPaymentMethod = () => {
+    // 새로운 결제 수단에 임시 ID 부여 (new_로 시작하는 ID는 서버에서 무시됨)
+    const tempId = `new_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
+    setPaymentMethods([
+      ...paymentMethods,
+      {
+        type: 'CARD',
+        amount: 0,
+        id: tempId // 임시 ID 부여
+      }
+    ]);
   };
 
   const handlePaymentMethodChange = (
@@ -164,21 +200,18 @@ export default function PaymentDetailPage({
     value: any
   ) => {
     const updatedMethods = [...paymentMethods];
-    updatedMethods[index] = {
-      ...updatedMethods[index],
-      [field]: field === 'amount' ? Number(value) : value
-    };
-    setPaymentMethods(updatedMethods);
-  };
 
-  const addPaymentMethod = () => {
-    setPaymentMethods([
-      ...paymentMethods,
-      {
-        type: 'CARD',
-        amount: 0
-      }
-    ]);
+    // 값이 변경된 경우에만 상태 업데이트
+    if (
+      (field === 'type' && updatedMethods[index].type !== value) ||
+      (field === 'amount' && updatedMethods[index].amount !== Number(value))
+    ) {
+      updatedMethods[index] = {
+        ...updatedMethods[index],
+        [field]: field === 'amount' ? Number(value) : value
+      };
+      setPaymentMethods(updatedMethods);
+    }
   };
 
   const removePaymentMethod = (index: number) => {
@@ -189,6 +222,13 @@ export default function PaymentDetailPage({
     }
 
     const updatedMethods = [...paymentMethods];
+    const removedMethod = updatedMethods[index];
+
+    // 제거된 결제 수단의 ID가 있으면 제거된 부분 결제 ID 목록에 추가
+    if (removedMethod.id) {
+      setRemovedPartialPaymentIds((prev) => [...prev, removedMethod.id!]);
+    }
+
     updatedMethods.splice(index, 1);
     setPaymentMethods(updatedMethods);
   };
@@ -219,14 +259,14 @@ export default function PaymentDetailPage({
             <ArrowLeft className='mr-2 h-4 w-4' />
             뒤로 가기
           </Button>
-          <Button onClick={handleSave} disabled={isLoading}>
+          <Button onClick={handleSave} disabled={isLoading || isUpdating}>
             <Save className='mr-2 h-4 w-4' />
             저장
           </Button>
         </SectionTopButtonArea>
       </SectionTopToolbar>
 
-      <div className='grid gap-6 md:grid-cols-2'>
+      <div className='mt-3 grid gap-6 md:grid-cols-2'>
         <Card>
           <CardHeader>
             <CardTitle>결제 정보</CardTitle>
@@ -243,15 +283,24 @@ export default function PaymentDetailPage({
               selectedUserId={selectedUserId}
               onSelect={setSelectedUserId}
               label='고객'
-              disabled={true} // 고객 변경은 현재 API에서 지원하지 않음
+              disabled={false} // 고객 변경 가능하도록 수정
             />
 
-            <PaymentItemSelect
-              items={products}
-              selectedItemId={selectedItemId}
-              onSelect={setSelectedItemId}
-              label='결제 항목'
-            />
+            <div className='grid gap-2'>
+              <Label>결제 항목</Label>
+              <div className='grid grid-cols-3 gap-4'>
+                {products.map((item) => (
+                  <Button
+                    key={item.id}
+                    variant={selectedItemId === item.id ? 'default' : 'outline'}
+                    className='flex h-auto flex-col items-center justify-center px-4 py-4'
+                    onClick={() => setSelectedItemId(item.id)}
+                  >
+                    <span className='text-sm font-medium'>{item.name}</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
 
             <div className='grid gap-2'>
               <Label>생성일</Label>
@@ -366,7 +415,7 @@ export default function PaymentDetailPage({
             <Button
               variant='destructive'
               onClick={handleCancel}
-              disabled={isLoading}
+              disabled={isLoading || isCancelling}
             >
               결제 취소
             </Button>
