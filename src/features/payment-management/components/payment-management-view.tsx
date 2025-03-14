@@ -13,11 +13,13 @@ import { usePayments } from '../utils/use-payments';
 interface PaymentManagementViewProps {
   products: PayableItemRestResponse[];
   users: UserResponse[];
+  onPaymentSelect?: (paymentId: string) => void;
 }
 
 export default function PaymentManagementView({
   products,
-  users
+  users,
+  onPaymentSelect
 }: PaymentManagementViewProps) {
   const { payments, updatePayment } = usePayments();
 
@@ -35,6 +37,7 @@ export default function PaymentManagementView({
       <PaymentHistoryListSection
         paymentHistoryItems={payments}
         updatePaymentHistoryMemo={handleUpdateMemo}
+        onPaymentSelect={onPaymentSelect}
       />
     </div>
   );

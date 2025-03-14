@@ -6,32 +6,23 @@ import { Button } from '@/components/ui/button';
 import { SectionTopToolbar, SectionTopButtonArea } from '@/components/section';
 import ProductManagementView from './product-management-view';
 import PaymentManagementView from './payment-management-view';
+import PaymentDetailPage from './payment-detail-page';
 import { usePageNavigation } from '@/hooks/user-page-navigation';
 import { Download } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { getStoreUsers } from '@/lib/api/sdk.gen';
-import {
-  UserResponse,
-  PayableItemRestResponse,
-  PaymentRestResponse
-} from '@/lib/api/types.gen';
+import { UserResponse, PayableItemRestResponse } from '@/lib/api/types.gen';
 import { usePayableItems } from '@/hooks/use-payable-items';
+import { usePayments } from '../utils/use-payments';
 
-type PageState = 'management' | 'product';
-
-// Remove custom types and use the generated types directly
-// No need for adapter function anymore since we're using the API types directly
+type PageState = 'management' | 'product' | 'payment-detail';
 
 export default function PaymentManagementPage() {
+  const { payments, isLoading: paymentsLoading, error } = usePayments();
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(
+    null
+  );
   const { page, navigateTo } = usePageNavigation<PageState>('management');
-
-  // 결제 항목 데이터 가져오기
-  const {
-    payableItems,
-    isLoading: isPayableItemsLoading,
-    createPayableItem,
-    updatePayableItem
-  } = usePayableItems();
 
   // API에서 사용자 데이터 가져오기
   const { data: usersData, isLoading: isUsersLoading } = useQuery({
@@ -46,6 +37,14 @@ export default function PaymentManagementPage() {
     }
   });
 
+  // 결제 항목 데이터 가져오기
+  const {
+    payableItems,
+    isLoading: isPayableItemsLoading,
+    createPayableItem,
+    updatePayableItem
+  } = usePayableItems();
+
   const users: UserResponse[] = usersData || [];
   const payableItemsList = payableItems?.data || [];
   // Use the PayableItemRestResponse directly
@@ -53,10 +52,16 @@ export default function PaymentManagementPage() {
 
   const goBack = () => {
     navigateTo('management');
+    setSelectedPaymentId(null);
   };
 
   const goProduct = () => {
     navigateTo('product');
+  };
+
+  const goPaymentDetail = (paymentId: string) => {
+    setSelectedPaymentId(paymentId);
+    navigateTo('payment-detail');
   };
 
   const handleExportToExcel = () => {
@@ -64,7 +69,18 @@ export default function PaymentManagementPage() {
     console.log('Export to Excel');
   };
 
-  const isLoading = isUsersLoading || isPayableItemsLoading;
+  const isLoading = isUsersLoading || paymentsLoading || isPayableItemsLoading;
+
+  if (selectedPaymentId && page === 'payment-detail') {
+    return (
+      <PaymentDetailPage
+        paymentId={selectedPaymentId}
+        onBack={goBack}
+        users={users}
+        products={products}
+      />
+    );
+  }
 
   return (
     <PageContainer>
@@ -86,7 +102,11 @@ export default function PaymentManagementPage() {
             </SectionTopButtonArea>
           </SectionTopToolbar>
           {!isLoading && (
-            <PaymentManagementView products={products} users={users} />
+            <PaymentManagementView
+              products={products}
+              users={users}
+              onPaymentSelect={goPaymentDetail}
+            />
           )}
         </>
       )}

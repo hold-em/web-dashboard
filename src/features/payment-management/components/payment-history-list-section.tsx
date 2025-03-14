@@ -11,7 +11,13 @@ import {
   getSortedRowModel,
   useReactTable
 } from '@tanstack/react-table';
-import { ChevronDown, Check, Download, Pencil } from 'lucide-react';
+import {
+  ChevronDown,
+  Check,
+  Download,
+  Pencil,
+  ExternalLink
+} from 'lucide-react';
 import { Section, SectionContent, SectionTitle } from '@/components/section';
 
 import { Button } from '@/components/ui/button';
@@ -54,11 +60,13 @@ const statusItems = [
 interface PaymentListProps {
   paymentHistoryItems: PaymentRestResponse[];
   updatePaymentHistoryMemo?: (id: string, memo: string) => void;
+  onPaymentSelect?: (paymentId: string) => void;
 }
 
 export default function PaymentListSection({
   paymentHistoryItems,
-  updatePaymentHistoryMemo
+  updatePaymentHistoryMemo,
+  onPaymentSelect
 }: PaymentListProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -157,19 +165,32 @@ export default function PaymentListSection({
         cell: ({ row }) => {
           return (
             <div className='flex items-center gap-2'>
-              <Button
-                variant='ghost'
-                size='icon'
-                onClick={() => openMemoDialog(row.original)}
-              >
-                <Pencil className='h-4 w-4' />
-              </Button>
+              {updatePaymentHistoryMemo && (
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  onClick={() => openMemoDialog(row.original)}
+                  title='메모 편집'
+                >
+                  <Pencil className='h-4 w-4' />
+                </Button>
+              )}
+              {onPaymentSelect && (
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  onClick={() => onPaymentSelect(row.original.id)}
+                  title='상세 정보'
+                >
+                  <ExternalLink className='h-4 w-4' />
+                </Button>
+              )}
             </div>
           );
         }
       }
     ],
-    []
+    [updatePaymentHistoryMemo, onPaymentSelect]
   );
 
   const table = useReactTable({
@@ -184,7 +205,7 @@ export default function PaymentListSection({
       columnFilters
     },
     initialState: {
-      sorting: [{ id: 'date', desc: true }],
+      sorting: [{ id: 'created_at', desc: true }],
       pagination: { pageSize: PAGE_SIZE }
     }
   });

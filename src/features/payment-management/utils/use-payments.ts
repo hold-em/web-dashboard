@@ -108,13 +108,19 @@ export const usePayments = () => {
         throw new Error('Payment not found');
       }
 
-      // Filter out any partial payments with status CANCELED as it's not allowed in updates
-      const filteredPartialPayments =
-        partialPayments?.map((pp) => ({
+      // If we're not explicitly updating partial payments, use the existing ones
+      // This helps avoid the "PartialPayment not found" error
+      let filteredPartialPayments;
+
+      if (partialPayments) {
+        // If new partial payments are provided, use them
+        filteredPartialPayments = partialPayments.map((pp) => ({
           ...pp,
           status: pp.status === 'CANCELED' ? 'PENDING' : pp.status
-        })) ||
-        currentPayment.partial_payments.map((pp) => ({
+        }));
+      } else {
+        // Otherwise, use the existing partial payments
+        filteredPartialPayments = currentPayment.partial_payments.map((pp) => ({
           payment_type: pp.payment_type as 'CARD' | 'CASH' | 'TRANSFER',
           price: pp.price || 0,
           status:
@@ -122,6 +128,7 @@ export const usePayments = () => {
               ? 'PENDING'
               : (pp.status as 'PENDING' | 'PAID')
         }));
+      }
 
       return await updatePayment({
         path: { storeId: storeId!, paymentId },

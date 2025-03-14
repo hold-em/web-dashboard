@@ -34,6 +34,7 @@ import { Input } from '@/components/ui/input';
 import { UserResponse } from '@/lib/api/types.gen';
 import { usePayments, PaymentMethod } from '../utils/use-payments';
 import { toast } from 'sonner';
+import { Textarea } from '@/components/ui/textarea';
 
 // 결제 수단 목록
 const paymentMethods = [
@@ -87,7 +88,8 @@ export default function PaymentAdditionSection({
     defaultValues: {
       product_id: '',
       payment_method: '',
-      user_id: ''
+      user_id: '',
+      memo: ''
     }
   });
   const [open, setOpen] = useState(false);
@@ -124,7 +126,7 @@ export default function PaymentAdditionSection({
         userId: data.user_id,
         payableItemId: data.product_id,
         paymentMethods,
-        memo: ''
+        memo: data.memo || ''
       },
       {
         onSuccess: () => {
@@ -134,7 +136,8 @@ export default function PaymentAdditionSection({
           form.reset({
             product_id: '',
             user_id: '',
-            payment_method: ''
+            payment_method: '',
+            memo: ''
           });
           setSelectedCustomer(null);
 
@@ -273,6 +276,24 @@ export default function PaymentAdditionSection({
               </div>
               <FormMessage />
             </FormItem>
+
+            <FormField
+              control={form.control}
+              name='memo'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>메모 (선택사항)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder='메모를 입력하세요'
+                      className='resize-none'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <Button type='submit' className='w-full' disabled={isCreating}>
               {isCreating ? '처리 중...' : '결제 추가'}
