@@ -81,7 +81,7 @@ export default function ProductListSection({
     initialState: {
       sorting: [{ id: 'created_at', desc: true }],
       pagination: { pageSize: PAGE_SIZE },
-      columnVisibility: { created_at: false }
+      columnVisibility: { created_at: true }
     }
   });
 

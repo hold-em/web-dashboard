@@ -182,16 +182,15 @@ export default function PaymentAdditionSection({
                 <FormItem className='space-y-3'>
                   <FormLabel>결제 항목</FormLabel>
                   <FormControl>
-                    <div className='grid gap-4'>
+                    <div className='flex flex-wrap gap-2'>
                       {products.map((product) => (
                         <div
                           key={product.id}
-                          className='flex items-center space-x-3 space-y-0'
                           onClick={() => field.onChange(product.id)}
                         >
                           <div
                             className={cn(
-                              'flex-1 cursor-pointer rounded-md border p-3',
+                              'cursor-pointer rounded-md border p-2',
                               field.value === product.id
                                 ? 'border-primary bg-primary/10'
                                 : 'border-input'

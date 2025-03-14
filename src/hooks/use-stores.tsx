@@ -20,7 +20,6 @@ export const useStores = () => {
       return data?.data ?? [];
     }
   });
-  console.log('🚀 ~ useStores ~ stores:', stores);
 
   // 매장 생성
   const createStoreMutation = useMutation({
