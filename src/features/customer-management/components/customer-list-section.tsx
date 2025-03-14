@@ -54,6 +54,7 @@ export default function CustomerListSection({
   selectUser,
   setCheckedUsers
 }: CustomerListProps) {
+  console.log('🚀 ~ users:', users);
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: 'created_by', desc: true }
   ]);
