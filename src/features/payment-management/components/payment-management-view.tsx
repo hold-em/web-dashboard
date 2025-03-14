@@ -3,49 +3,38 @@
 import { useState } from 'react';
 import PaymentHistoryListSection from './payment-history-list-section';
 import PaymentAdditionSection from './payment-addition-section';
-import { UserResponse } from '@/lib/api/types.gen';
 import {
-  PaymentHistory,
-  PaymentHistoryItem,
-  Product
-} from './payment-management-page';
+  UserResponse,
+  PayableItemRestResponse,
+  PaymentRestResponse
+} from '@/lib/api/types.gen';
+import { usePayments } from '../utils/use-payments';
 
 interface PaymentManagementViewProps {
-  products: Product[];
-  paymentHistories: PaymentHistory[];
-  paymentHistoryItems: PaymentHistoryItem[];
+  products: PayableItemRestResponse[];
   users: UserResponse[];
-  addPaymentHistory: (paymentHistory: PaymentHistory) => void;
-  updatePaymentHistoryMemo?: (id: string, memo: string) => void;
 }
 
 export default function PaymentManagementView({
   products,
-  paymentHistories,
-  paymentHistoryItems,
-  users,
-  addPaymentHistory,
-  updatePaymentHistoryMemo
+  users
 }: PaymentManagementViewProps) {
-  const [selectedPaymentHistory, setSelectedPaymentHistory] =
-    useState<PaymentHistoryItem | null>(null);
+  const { payments, updatePayment } = usePayments();
 
-  const selectPaymentHistory = (item: PaymentHistoryItem) => {
-    setSelectedPaymentHistory(item);
+  // 메모 업데이트 핸들러
+  const handleUpdateMemo = (id: string, memo: string) => {
+    updatePayment({
+      paymentId: id,
+      memo
+    });
   };
 
   return (
     <div className='space-y-8'>
-      <PaymentAdditionSection
-        products={products}
-        users={users}
-        addPaymentHistory={addPaymentHistory}
-      />
+      <PaymentAdditionSection products={products} users={users} />
       <PaymentHistoryListSection
-        paymentHistories={paymentHistories}
-        paymentHistoryItems={paymentHistoryItems}
-        selectPaymentHistory={selectPaymentHistory}
-        updatePaymentHistory={updatePaymentHistoryMemo}
+        paymentHistoryItems={payments}
+        updatePaymentHistoryMemo={handleUpdateMemo}
       />
     </div>
   );

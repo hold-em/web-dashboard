@@ -22,11 +22,11 @@ import {
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
 import { PAGE_SIZE } from '@/constants/common';
-import { Product } from './payment-management-page';
+import { PayableItemRestResponse } from '@/lib/api/types.gen';
 
 interface ProductListSectionProps {
-  products: Product[];
-  selectProduct: (paymentItem: Product) => void;
+  products: PayableItemRestResponse[];
+  selectProduct: (paymentItem: PayableItemRestResponse) => void;
 }
 
 export default function ProductListSection({
@@ -36,7 +36,7 @@ export default function ProductListSection({
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({ created_at: false });
 
-  const columns = React.useMemo<ColumnDef<Product>[]>(
+  const columns = React.useMemo<ColumnDef<PayableItemRestResponse>[]>(
     () => [
       {
         accessorKey: 'name',

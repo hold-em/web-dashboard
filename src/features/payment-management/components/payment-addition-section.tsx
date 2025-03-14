@@ -14,7 +14,7 @@ import { paymentSchema, type PaymentFormData } from '../utils/form-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Product, PaymentHistory } from './payment-management-page';
+import { PayableItemRestResponse } from '@/lib/api/types.gen';
 import {
   Popover,
   PopoverTrigger,
@@ -30,23 +30,46 @@ import {
 } from '@/components/ui/command';
 import { ChevronsUpDown, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { v4 as uuid } from 'uuid';
 import { Input } from '@/components/ui/input';
 import { UserResponse } from '@/lib/api/types.gen';
+import { usePayments, PaymentMethod } from '../utils/use-payments';
+import { toast } from 'sonner';
 
 // 결제 수단 목록
-const paymentMethods = ['카드', '현금', '이용권', '미수'] as const;
+const paymentMethods = [
+  '카드',
+  'CARD',
+  '현금',
+  'CASH',
+  '이용권',
+  'VOUCHER',
+  '미수',
+  'UNPAID'
+] as const;
+
+// 결제 수단 매핑
+const paymentMethodMapping: Record<
+  string,
+  'CARD' | 'CASH' | 'TRANSFER' | 'UNPAID'
+> = {
+  카드: 'CARD',
+  CARD: 'CARD',
+  현금: 'CASH',
+  CASH: 'CASH',
+  이용권: 'TRANSFER',
+  VOUCHER: 'TRANSFER',
+  미수: 'UNPAID',
+  UNPAID: 'UNPAID'
+};
 
 interface PaymentAdditionSectionProps {
-  products: Product[];
+  products: PayableItemRestResponse[];
   users: UserResponse[];
-  addPaymentHistory: (paymentHistory: PaymentHistory) => void;
 }
 
 export default function PaymentAdditionSection({
   products,
-  users,
-  addPaymentHistory
+  users
 }: PaymentAdditionSectionProps) {
   // 각 결제 수단별 금액 상태 관리
   const [paymentAmounts, setPaymentAmounts] = useState<Record<string, string>>({
@@ -55,6 +78,8 @@ export default function PaymentAdditionSection({
     이용권: '',
     미수: ''
   });
+
+  const { createPayment, isCreating } = usePayments();
 
   const form = useForm<PaymentFormData>({
     resolver: zodResolver(paymentSchema),
@@ -79,32 +104,53 @@ export default function PaymentAdditionSection({
   };
 
   const onSubmit: SubmitHandler<PaymentFormData> = (data) => {
-    // 선택된 결제 수단의 금액 가져오기
-    const amount = paymentAmounts[data.payment_method];
+    // 모든 결제 수단에서 금액이 입력된 것만 필터링
+    const paymentMethods: PaymentMethod[] = Object.entries(paymentAmounts)
+      .filter(([_, amount]) => amount && parseInt(amount) > 0)
+      .map(([method, amount]) => ({
+        type: paymentMethodMapping[method],
+        amount: parseInt(amount)
+      }));
 
-    const newPaymentHistory: PaymentHistory = {
-      id: uuid(),
-      user_id: data.user_id,
-      product_id: data.product_id,
-      payment_method: data.payment_method,
-      date: new Date().toISOString(),
-      status: '대기',
-      amount: amount ? parseInt(amount) : 0 // 금액 추가
-    };
-    addPaymentHistory(newPaymentHistory);
-    form.reset({
-      product_id: '',
-      payment_method: '',
-      user_id: ''
-    });
-    setSelectedCustomer(null);
-    // 결제 금액 초기화
-    setPaymentAmounts({
-      카드: '',
-      현금: '',
-      이용권: '',
-      미수: ''
-    });
+    // 결제 수단이 하나도 선택되지 않은 경우
+    if (paymentMethods.length === 0) {
+      toast.error('하나 이상의 결제 수단과 금액을 입력해야 합니다.');
+      return;
+    }
+
+    // API를 통해 결제 생성
+    createPayment(
+      {
+        userId: data.user_id,
+        payableItemId: data.product_id,
+        paymentMethods,
+        memo: ''
+      },
+      {
+        onSuccess: () => {
+          toast.success('결제가 성공적으로 추가되었습니다.');
+
+          // 폼 초기화
+          form.reset({
+            product_id: '',
+            user_id: '',
+            payment_method: ''
+          });
+          setSelectedCustomer(null);
+
+          // 결제 금액 초기화
+          setPaymentAmounts({
+            카드: '',
+            현금: '',
+            이용권: '',
+            미수: ''
+          });
+        },
+        onError: (error) => {
+          toast.error('결제 추가 중 오류가 발생했습니다: ' + error.message);
+        }
+      }
+    );
   };
 
   return (
@@ -190,10 +236,10 @@ export default function PaymentAdditionSection({
                         >
                           <div
                             className={cn(
-                              'cursor-pointer rounded-md border p-2',
+                              'cursor-pointer rounded-md border px-3 py-1 text-sm',
                               field.value === product.id
-                                ? 'border-primary bg-primary/10'
-                                : 'border-input'
+                                ? 'border-primary bg-primary/10 font-medium'
+                                : 'border-input hover:bg-accent/50'
                             )}
                           >
                             {product.name}
@@ -207,46 +253,29 @@ export default function PaymentAdditionSection({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name='payment_method'
-              render={({ field }) => (
-                <FormItem className='space-y-3'>
-                  <FormLabel>결제 수단 및 금액</FormLabel>
-                  <FormControl>
-                    <div className='space-y-4'>
-                      {paymentMethods.map((method) => (
-                        <div key={method} className='flex items-center gap-3'>
-                          <Button
-                            type='button'
-                            variant={
-                              field.value === method ? 'default' : 'outline'
-                            }
-                            onClick={() => field.onChange(method)}
-                            className='w-24'
-                          >
-                            {method}
-                          </Button>
-                          <Input
-                            type='number'
-                            placeholder='금액'
-                            value={paymentAmounts[method]}
-                            onChange={(e) =>
-                              handleAmountChange(method, e.target.value)
-                            }
-                            className='flex-1'
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormItem className='space-y-3'>
+              <FormLabel>결제 수단 및 금액</FormLabel>
+              <div className='space-y-4'>
+                {['카드', '현금', '이용권', '미수'].map((method) => (
+                  <div key={method} className='flex items-center gap-3'>
+                    <div className='w-24 font-medium'>{method}</div>
+                    <Input
+                      type='number'
+                      placeholder='금액'
+                      value={paymentAmounts[method]}
+                      onChange={(e) =>
+                        handleAmountChange(method, e.target.value)
+                      }
+                      className='flex-1'
+                    />
+                  </div>
+                ))}
+              </div>
+              <FormMessage />
+            </FormItem>
 
-            <Button type='submit' className='w-full'>
-              결제 추가
+            <Button type='submit' className='w-full' disabled={isCreating}>
+              {isCreating ? '처리 중...' : '결제 추가'}
             </Button>
           </form>
         </Form>

@@ -23,18 +23,18 @@ import {
 } from '@/components/ui/form';
 import { productSchema, ProductFormData } from '../utils/form-schema';
 import { v4 as uuidv4 } from 'uuid';
-import { Product } from './payment-management-page';
+import { PayableItemRestResponse } from '@/lib/api/types.gen';
 
 interface ProductDialogProps {
-  addProduct: (product: Product) => void;
-  updateProduct: (product: Product) => void;
-  initialData?: Product | null;
+  addProduct: (product: PayableItemRestResponse) => void;
+  updateProduct: (product: PayableItemRestResponse) => void;
+  initialData?: PayableItemRestResponse | null;
   onClose?: () => void;
   open: boolean;
   setOpen: (open: boolean) => void;
 }
 
-export default function ProductDialog({
+export default function ProductFormDialog({
   addProduct,
   updateProduct,
   initialData,
@@ -42,60 +42,65 @@ export default function ProductDialog({
   open,
   setOpen
 }: ProductDialogProps) {
-  const resetValue = {
-    name: '',
-    position: 0
-  };
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
-    mode: 'onChange',
-    defaultValues: resetValue
+    defaultValues: {
+      name: '',
+      position: 0
+    }
   });
 
   useEffect(() => {
-    if (open) {
-      if (initialData) {
-        form.reset({
-          ...initialData,
-          position: initialData.position || 0
-        });
-      } else {
-        form.reset(resetValue);
-      }
+    if (initialData) {
+      form.reset({
+        name: initialData.name,
+        position: initialData.position
+      });
+    } else {
+      form.reset({
+        name: '',
+        position: 0
+      });
     }
-  }, [open, initialData, form]);
+  }, [initialData, form]);
 
   const onSubmit = (data: ProductFormData) => {
     if (initialData) {
+      // 기존 항목 업데이트
       updateProduct({
-        id: initialData.id,
-        created_at: initialData.created_at,
-        ...data
+        ...initialData,
+        name: data.name,
+        position: data.position
       });
     } else {
-      addProduct({
-        id: uuidv4(),
+      // 새 항목 추가
+      const newProduct: PayableItemRestResponse = {
+        id: uuidv4(), // 임시 ID 생성 (실제로는 서버에서 생성)
+        name: data.name,
+        position: data.position,
+        store_id: 1, // 임시 store_id
+        created_by: 'current_user', // 임시 사용자 ID
         created_at: new Date().toISOString(),
-        ...data
-      });
+        updated_at: new Date().toISOString()
+      };
+      addProduct(newProduct);
     }
     setOpen(false);
-    form.reset(resetValue);
-    if (onClose) onClose();
   };
 
-  const onDialogOpenChange = (isOpen: boolean) => {
-    setOpen(isOpen);
-    if (!isOpen) {
-      form.reset(resetValue);
-    }
+  const handleClose = () => {
+    form.reset();
+    if (onClose) onClose();
+    setOpen(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onDialogOpenChange}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
-          <DialogTitle>결제 항목 {initialData ? '수정' : '추가'}</DialogTitle>
+          <DialogTitle>
+            {initialData ? '결제 항목 수정' : '결제 항목 추가'}
+          </DialogTitle>
           <DialogDescription>결제 항목의 정보를 입력하세요.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -105,9 +110,9 @@ export default function ProductDialog({
               name='name'
               render={({ field }) => (
                 <FormItem>
-                  <Label htmlFor='name'>이름</Label>
+                  <Label htmlFor='name'>항목명</Label>
                   <FormControl>
-                    <Input id='name' placeholder='이름 입력' {...field} />
+                    <Input id='name' placeholder='항목명' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -121,15 +126,14 @@ export default function ProductDialog({
                   <Label htmlFor='position'>순서</Label>
                   <FormControl>
                     <Input
-                      type='number'
                       id='position'
-                      placeholder='순서 입력'
-                      value={field.value ?? ''}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value ? Number(e.target.value) : 0
-                        )
-                      }
+                      type='number'
+                      placeholder='순서'
+                      {...field}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        field.onChange(value === '' ? '' : Number(value));
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -137,7 +141,10 @@ export default function ProductDialog({
               )}
             />
             <DialogFooter>
-              <Button type='submit'>{initialData ? '수정' : '추가'}</Button>
+              <Button type='button' variant='outline' onClick={handleClose}>
+                취소
+              </Button>
+              <Button type='submit'>저장</Button>
             </DialogFooter>
           </form>
         </Form>

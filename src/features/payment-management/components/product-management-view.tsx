@@ -1,20 +1,16 @@
 'use client';
 
 import { useState } from 'react';
-import ProductListSection from './product-list-section';
-import {
-  SectionTopToolbar,
-  BackButton,
-  SectionTopButtonArea
-} from '@/components/section';
-import ProductDialog from './product-form-dialog';
 import { Button } from '@/components/ui/button';
-import { Product } from './payment-management-page';
+import { SectionTopToolbar, SectionTopButtonArea } from '@/components/section';
+import ProductListSection from './product-list-section';
+import ProductFormDialog from './product-form-dialog';
+import { PayableItemRestResponse } from '@/lib/api/types.gen';
 
 interface ProductManagementViewProps {
-  products: Product[];
-  addProduct: (product: Product) => void;
-  updateProduct: (product: Product) => void;
+  products: PayableItemRestResponse[];
+  addProduct: (product: PayableItemRestResponse) => void;
+  updateProduct: (product: PayableItemRestResponse) => void;
   goBack: () => void;
 }
 
@@ -24,42 +20,40 @@ export default function ProductManagementView({
   updateProduct,
   goBack
 }: ProductManagementViewProps) {
-  const [open, setOpen] = useState<boolean>(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] =
+    useState<PayableItemRestResponse | null>(null);
 
-  const onUpdateProduct = (product: Product) => {
-    updateProduct(product);
+  const handleAddClick = () => {
     setSelectedProduct(null);
+    setDialogOpen(true);
   };
 
-  const selectProduct = (product: Product) => {
+  const handleProductSelect = (product: PayableItemRestResponse) => {
     setSelectedProduct(product);
-    setOpen(true);
+    setDialogOpen(true);
   };
 
   return (
     <>
       <SectionTopToolbar>
-        <BackButton onClick={goBack}>결제 목록</BackButton>
         <SectionTopButtonArea>
-          <Button
-            variant='outline'
-            onClick={() => {
-              setOpen(true);
-              setSelectedProduct(null);
-            }}
-          >
-            결제 항목 추가
+          <Button variant='outline' onClick={goBack} className='mr-2'>
+            뒤로 가기
           </Button>
+          <Button onClick={handleAddClick}>결제 항목 추가</Button>
         </SectionTopButtonArea>
       </SectionTopToolbar>
-      <ProductListSection products={products} selectProduct={selectProduct} />
-      <ProductDialog
+      <ProductListSection
+        products={products}
+        selectProduct={handleProductSelect}
+      />
+      <ProductFormDialog
+        open={dialogOpen}
+        setOpen={setDialogOpen}
         addProduct={addProduct}
-        updateProduct={onUpdateProduct}
+        updateProduct={updateProduct}
         initialData={selectedProduct}
-        open={open}
-        setOpen={setOpen}
       />
     </>
   );

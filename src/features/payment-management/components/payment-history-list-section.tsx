@@ -31,41 +31,40 @@ import {
   TableRow
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
-import { PaymentHistory, PaymentHistoryItem } from './payment-management-page';
+import { PaymentRestResponse } from '@/lib/api/types.gen';
 import { PAGE_SIZE } from '@/constants/common';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
 
 const statusItems = [
   { label: '전체', value: '' },
-  { label: '대기', value: '대기' },
-  { label: '완료', value: '완료' }
+  { label: '대기', value: 'PENDING' },
+  { label: '완료', value: 'PAID' },
+  { label: '취소', value: 'CANCELED' }
 ];
 
 interface PaymentListProps {
-  paymentHistories: PaymentHistory[];
-  paymentHistoryItems: PaymentHistoryItem[];
-  selectPaymentHistory: (item: PaymentHistoryItem) => void;
-  updatePaymentHistory?: (id: string, memo: string) => void;
+  paymentHistoryItems: PaymentRestResponse[];
+  updatePaymentHistoryMemo?: (id: string, memo: string) => void;
 }
 
 export default function PaymentListSection({
-  selectPaymentHistory,
   paymentHistoryItems,
-  updatePaymentHistory
+  updatePaymentHistoryMemo
 }: PaymentListProps) {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
   const [memoDialogOpen, setMemoDialogOpen] = useState(false);
-  const [selectedItem, setSelectedItem] = useState<PaymentHistoryItem | null>(
+  const [selectedItem, setSelectedItem] = useState<PaymentRestResponse | null>(
     null
   );
   const [memo, setMemo] = useState('');
@@ -75,95 +74,102 @@ export default function PaymentListSection({
     console.log('Export to Excel');
   };
 
-  const openMemoDialog = (item: PaymentHistoryItem) => {
+  const openMemoDialog = (item: PaymentRestResponse) => {
     setSelectedItem(item);
     setMemo(item.memo || '');
     setMemoDialogOpen(true);
   };
 
   const saveMemo = () => {
-    if (selectedItem && updatePaymentHistory) {
-      updatePaymentHistory(selectedItem.id, memo);
+    if (selectedItem && updatePaymentHistoryMemo) {
+      updatePaymentHistoryMemo(selectedItem.id, memo);
     }
     setMemoDialogOpen(false);
   };
 
-  const columns = React.useMemo<ColumnDef<PaymentHistoryItem>[]>(
+  const columns = React.useMemo<ColumnDef<PaymentRestResponse>[]>(
     () => [
       {
-        accessorKey: 'user_name',
+        accessorKey: 'payed_by',
         header: '고객',
-        cell: ({ row }) => <div>{row.getValue('user_name')}</div>
+        cell: ({ row }) => <div>{row.getValue('payed_by')}</div>
       },
       {
-        accessorKey: 'price',
-        header: '상품 금액',
-        cell: ({ row }) => <div>-</div>
+        accessorKey: 'total_price',
+        header: '금액',
+        cell: ({ row }) =>
+          Number(row.getValue('total_price')).toLocaleString('ko-KR', {
+            style: 'currency',
+            currency: 'KRW'
+          })
       },
       {
-        accessorKey: 'amount',
-        header: '결제 금액',
+        accessorKey: 'payment_status',
+        header: '상태',
         cell: ({ row }) => {
-          const amount = row.getValue('amount');
+          const status = row.getValue('payment_status') as string;
+          let statusText = '';
+          let statusClass = '';
+
+          switch (status) {
+            case 'PENDING':
+              statusText = '대기';
+              statusClass = 'bg-yellow-100 text-yellow-800';
+              break;
+            case 'PAID':
+              statusText = '완료';
+              statusClass = 'bg-green-100 text-green-800';
+              break;
+            case 'CANCELED':
+              statusText = '취소';
+              statusClass = 'bg-red-100 text-red-800';
+              break;
+            default:
+              statusText = status;
+              statusClass = 'bg-gray-100 text-gray-800';
+          }
+
           return (
-            <div>{amount ? Number(amount).toLocaleString() + '원' : '-'}</div>
+            <div
+              className={`inline-block rounded-full px-2 py-1 text-xs font-semibold ${statusClass}`}
+            >
+              {statusText}
+            </div>
           );
         }
       },
       {
-        accessorKey: 'payment_method',
-        header: '결제수단',
-        cell: ({ row }) => <div>{row.getValue('payment_method')}</div>
-      },
-      {
-        accessorKey: 'date',
+        accessorKey: 'created_at',
         header: '날짜',
-        cell: ({ row }) => <div>{row.getValue('date')}</div>
-      },
-      {
-        accessorKey: 'status',
-        header: '상태',
-        cell: ({ row }) => <div>{row.getValue('status')}</div>
+        cell: ({ row }) => new Date(row.getValue('created_at')).toLocaleString()
       },
       {
         accessorKey: 'memo',
         header: '메모',
-        cell: ({ row }) => (
-          <div className='flex items-center'>
-            <span className='max-w-[150px] truncate'>
-              {row.getValue('memo') || '-'}
-            </span>
-            {updatePaymentHistory && (
-              <Button
-                variant='ghost'
-                size='icon'
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openMemoDialog(row.original);
-                }}
-              >
-                <Pencil className='h-4 w-4' />
-              </Button>
-            )}
-          </div>
-        )
+        cell: ({ row }) => {
+          const memo = row.getValue('memo') as string | undefined;
+          return memo ? memo : '-';
+        }
       },
       {
         id: 'actions',
-        enableHiding: false,
         header: '관리',
-        cell: ({ row }) => (
-          <Button
-            variant='secondary'
-            size='sm'
-            onClick={() => selectPaymentHistory(row.original)}
-          >
-            상세정보
-          </Button>
-        )
+        cell: ({ row }) => {
+          return (
+            <div className='flex items-center gap-2'>
+              <Button
+                variant='ghost'
+                size='icon'
+                onClick={() => openMemoDialog(row.original)}
+              >
+                <Pencil className='h-4 w-4' />
+              </Button>
+            </div>
+          );
+        }
       }
     ],
-    [selectPaymentHistory, updatePaymentHistory]
+    []
   );
 
   const table = useReactTable({
@@ -188,7 +194,7 @@ export default function PaymentListSection({
       <SectionTitle>결제 목록</SectionTitle>
       <SectionContent>
         <div className='flex items-center justify-between gap-2 py-4'>
-          <Input
+          {/* <Input
             placeholder='고객 검색'
             value={
               (table.getColumn('user_name')?.getFilterValue() as string) ?? ''
@@ -197,7 +203,7 @@ export default function PaymentListSection({
               table.getColumn('user_name')?.setFilterValue(event.target.value)
             }
             className='max-w-sm'
-          />
+          /> */}
           <div className='flex gap-2'>
             <Button
               variant='outline'
@@ -213,7 +219,7 @@ export default function PaymentListSection({
                   결제 상태 <ChevronDown />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align='end'>
+              {/* <DropdownMenuContent align='end'>
                 {(() => {
                   const currentStatus = table
                     .getColumn('status')
@@ -236,7 +242,7 @@ export default function PaymentListSection({
                     );
                   });
                 })()}
-              </DropdownMenuContent>
+              </DropdownMenuContent> */}
             </DropdownMenu>
           </div>
         </div>
