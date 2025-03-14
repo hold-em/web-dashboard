@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { Product } from '@/mocks/payments';
 import ProductListSection from './product-list-section';
 import {
   SectionTopToolbar,
@@ -10,6 +9,7 @@ import {
 } from '@/components/section';
 import ProductDialog from './product-form-dialog';
 import { Button } from '@/components/ui/button';
+import { Product } from './payment-management-page';
 
 interface ProductManagementViewProps {
   products: Product[];

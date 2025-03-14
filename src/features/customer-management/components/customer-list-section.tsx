@@ -55,13 +55,13 @@ export default function CustomerListSection({
   setCheckedUsers
 }: CustomerListProps) {
   const [sorting, setSorting] = React.useState<SortingState>([
-    { id: 'created_at', desc: true }
+    { id: 'created_by', desc: true }
   ]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({ created_at: false });
+    React.useState<VisibilityState>({ created_by: false });
   const [rowSelection, setRowSelection] = React.useState({});
 
   const columns = React.useMemo<ColumnDef<UserResponse>[]>(
@@ -152,9 +152,9 @@ export default function CustomerListSection({
       rowSelection
     },
     initialState: {
-      sorting: [{ id: 'created_at', desc: true }],
+      sorting: [{ id: 'created_by', desc: true }],
       pagination: { pageSize: PAGE_SIZE },
-      columnVisibility: { created_at: false }
+      columnVisibility: { created_by: false }
     }
   });
 
@@ -190,7 +190,7 @@ export default function CustomerListSection({
             <DropdownMenuContent align='end'>
               {(() => {
                 const currentStatus = table
-                  .getColumn('member_status')
+                  .getColumn('type')
                   ?.getFilterValue() as string | undefined;
                 return statusItems.map((item) => {
                   const isChecked =
@@ -201,9 +201,7 @@ export default function CustomerListSection({
                     <DropdownMenuItem
                       key={item.value}
                       onClick={() =>
-                        table
-                          .getColumn('member_status')
-                          ?.setFilterValue(item.value)
+                        table.getColumn('type')?.setFilterValue(item.value)
                       }
                     >
                       {isChecked && <Check className='mr-2 h-4 w-4' />}

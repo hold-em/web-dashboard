@@ -31,7 +31,7 @@ import {
   TableRow
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
-import { PaymentHistory, PaymentHistoryItem } from '@/mocks/payments';
+import { PaymentHistory, PaymentHistoryItem } from './payment-management-page';
 import { PAGE_SIZE } from '@/constants/common';
 import {
   Dialog,
@@ -98,9 +98,7 @@ export default function PaymentListSection({
       {
         accessorKey: 'price',
         header: '상품 금액',
-        cell: ({ row }) => (
-          <div>{Number(row.getValue('price')).toLocaleString()}원</div>
-        )
+        cell: ({ row }) => <div>-</div>
       },
       {
         accessorKey: 'amount',

@@ -1,10 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { PaymentHistory, PaymentHistoryItem, Product } from '@/mocks/payments';
 import PaymentHistoryListSection from './payment-history-list-section';
 import PaymentAdditionSection from './payment-addition-section';
 import { UserResponse } from '@/lib/api/types.gen';
+import {
+  PaymentHistory,
+  PaymentHistoryItem,
+  Product
+} from './payment-management-page';
 
 interface PaymentManagementViewProps {
   products: Product[];

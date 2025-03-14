@@ -20,9 +20,9 @@ import {
   FormControl,
   FormMessage
 } from '@/components/ui/form';
-import { Product } from '@/mocks/payments';
 import { productSchema, ProductFormData } from '../utils/form-schema';
 import { v4 as uuidv4 } from 'uuid';
+import { Product } from './payment-management-page';
 
 interface ProductDialogProps {
   addProduct: (product: Product) => void;
@@ -43,7 +43,7 @@ export default function ProductDialog({
 }: ProductDialogProps) {
   const resetValue = {
     name: '',
-    price: undefined
+    position: 0
   };
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
@@ -54,7 +54,10 @@ export default function ProductDialog({
   useEffect(() => {
     if (open) {
       if (initialData) {
-        form.reset(initialData);
+        form.reset({
+          ...initialData,
+          position: initialData.position || 0
+        });
       } else {
         form.reset(resetValue);
       }
@@ -110,19 +113,19 @@ export default function ProductDialog({
             />
             <FormField
               control={form.control}
-              name='price'
+              name='position'
               render={({ field }) => (
                 <FormItem>
-                  <Label htmlFor='price'>가격</Label>
+                  <Label htmlFor='position'>순서</Label>
                   <FormControl>
                     <Input
                       type='number'
-                      id='price'
-                      placeholder='가격 입력'
+                      id='position'
+                      placeholder='순서 입력'
                       value={field.value ?? ''}
                       onChange={(e) =>
                         field.onChange(
-                          e.target.value ? Number(e.target.value) : undefined
+                          e.target.value ? Number(e.target.value) : 0
                         )
                       }
                     />

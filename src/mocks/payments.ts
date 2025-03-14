@@ -5,27 +5,6 @@ export interface Product {
   created_at: string;
 }
 
-export const mockProducts: Product[] = [
-  {
-    id: '3bee1f8b-8e01-45a9-bc43-bd054f13ee33',
-    name: '바이인',
-    price: 50000,
-    created_at: '2021-01-01'
-  },
-  {
-    id: '3ac28067-4377-4125-a7d7-49789acde451',
-    name: '리엔트리',
-    price: 30000,
-    created_at: '2022-01-01'
-  },
-  {
-    id: 'f51c6942-80ab-4df5-89dd-f258ef4e8a55',
-    name: '음료',
-    price: 50000,
-    created_at: '2023-01-01'
-  }
-];
-
 export interface PaymentHistory {
   id: string;
   user_id: string;

@@ -21,8 +21,8 @@ import {
   TableRow
 } from '@/components/ui/table';
 import TablePagination from '@/components/table-pagination';
-import { Product } from '@/mocks/payments';
 import { PAGE_SIZE } from '@/constants/common';
+import { Product } from './payment-management-page';
 
 interface ProductListSectionProps {
   products: Product[];
@@ -42,13 +42,6 @@ export default function ProductListSection({
         accessorKey: 'name',
         header: '항목명',
         cell: ({ row }) => <div>{row.getValue('name')}</div>
-      },
-      {
-        accessorKey: 'price',
-        header: '가격',
-        cell: ({ row }) => (
-          <div>{Number(row.getValue('price')).toLocaleString()}원</div>
-        )
       },
       {
         accessorKey: 'created_at',

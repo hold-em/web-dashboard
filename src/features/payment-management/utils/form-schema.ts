@@ -2,11 +2,9 @@ import { z } from 'zod';
 
 export const productSchema = z.object({
   name: z.string().min(1, '이름을 입력하세요.'),
-  price: z.preprocess(
-    (val) => (val === '' ? undefined : Number(val)),
-    z
-      .number({ invalid_type_error: '가격을 입력해 주세요.' })
-      .min(1, '가격은 1 이상이어야 합니다.')
+  position: z.preprocess(
+    (val) => (val === '' ? 0 : Number(val)),
+    z.number().default(0)
   )
 });
 

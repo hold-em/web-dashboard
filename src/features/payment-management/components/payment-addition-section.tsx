@@ -14,7 +14,7 @@ import { paymentSchema, type PaymentFormData } from '../utils/form-schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import { Product, PaymentHistory } from '@/mocks/payments';
+import { Product, PaymentHistory } from './payment-management-page';
 import {
   Popover,
   PopoverTrigger,
