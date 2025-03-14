@@ -10,6 +10,10 @@ import type {
   FindByIdResponse,
   UpdateData,
   UpdateResponse,
+  DeleteVoucherTemplateData,
+  DeleteVoucherTemplateResponse,
+  UpdateVoucherTemplateData,
+  UpdateVoucherTemplateResponse,
   DeleteStoreData,
   DeleteStoreResponse,
   UpdateStoreData,
@@ -44,6 +48,10 @@ import type {
   DeleteGameTypeResponse,
   UpdateGameTypeData,
   UpdateGameTypeResponse,
+  DeleteCompetitionData,
+  DeleteCompetitionResponse,
+  UpdateCompetitionData,
+  UpdateCompetitionResponse,
   UseVouchersData,
   UseVouchersResponse,
   UnregisterDeviceTokenData,
@@ -74,8 +82,6 @@ import type {
   GetCreatedStoresResponse,
   CreateStoreData,
   CreateStoreResponse,
-  GetTodayStoreVisitsData,
-  GetTodayStoreVisitsResponse,
   CreateTodayStoreVisitData,
   CreateTodayStoreVisitResponse,
   CreateTempUserData,
@@ -136,6 +142,8 @@ import type {
   CreateLeagueResponse,
   CreateGameTypeData,
   CreateGameTypeResponse,
+  CreateCompetitionData,
+  CreateCompetitionResponse,
   ChangeGameStatusData,
   ChangeGameStatusResponse,
   SetFileUploadCompletedData,
@@ -184,6 +192,8 @@ import type {
   GetReceivedNotificationsResponse,
   GetNotificationData,
   GetNotificationResponse,
+  GetStoreVisitsData,
+  GetStoreVisitsResponse,
   GetStoreUsersData,
   GetStoreUsersResponse,
   GetAwardedPointAwardsData,
@@ -218,8 +228,10 @@ import type {
   GetPresignedGetUrlResponse,
   GetPresignedUploadUrlData,
   GetPresignedUploadUrlResponse,
-  DeleteVoucherTemplateData,
-  DeleteVoucherTemplateResponse
+  GetCompetitionsData,
+  GetCompetitionsResponse,
+  GetCompetitionData,
+  GetCompetitionResponse
 } from './types.gen';
 import { client as _heyApiClient } from './client.gen';
 
@@ -268,6 +280,48 @@ export const update = <ThrowOnError extends boolean = false>(
       }
     ],
     url: '/users/<userId>',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers
+    }
+  });
+};
+
+export const deleteVoucherTemplate = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteVoucherTemplateData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).delete<
+    DeleteVoucherTemplateResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/manager/voucher-templates/{voucherTemplateId}',
+    ...options
+  });
+};
+
+export const updateVoucherTemplate = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateVoucherTemplateData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).put<
+    UpdateVoucherTemplateResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/manager/voucher-templates/{voucherTemplateId}',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -637,6 +691,48 @@ export const updateGameType = <ThrowOnError extends boolean = false>(
   });
 };
 
+export const deleteCompetition = <ThrowOnError extends boolean = false>(
+  options: Options<DeleteCompetitionData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).delete<
+    DeleteCompetitionResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/admin/competitions/{competitionId}',
+    ...options
+  });
+};
+
+export const updateCompetition = <ThrowOnError extends boolean = false>(
+  options: Options<UpdateCompetitionData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).put<
+    UpdateCompetitionResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/admin/competitions/{competitionId}',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers
+    }
+  });
+};
+
 export const useVouchers = <ThrowOnError extends boolean = false>(
   options: Options<UseVouchersData, ThrowOnError>
 ) => {
@@ -949,25 +1045,6 @@ export const createStore = <ThrowOnError extends boolean = false>(
       'Content-Type': 'application/json',
       ...options?.headers
     }
-  });
-};
-
-export const getTodayStoreVisits = <ThrowOnError extends boolean = false>(
-  options: Options<GetTodayStoreVisitsData, ThrowOnError>
-) => {
-  return (options.client ?? _heyApiClient).get<
-    GetTodayStoreVisitsResponse,
-    unknown,
-    ThrowOnError
-  >({
-    security: [
-      {
-        scheme: 'bearer',
-        type: 'http'
-      }
-    ],
-    url: '/manager/stores/{storeId}/today-visits',
-    ...options
   });
 };
 
@@ -1589,6 +1666,29 @@ export const createGameType = <ThrowOnError extends boolean = false>(
   });
 };
 
+export const createCompetition = <ThrowOnError extends boolean = false>(
+  options: Options<CreateCompetitionData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).post<
+    CreateCompetitionResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/admin/competitions',
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...options?.headers
+    }
+  });
+};
+
 export const changeGameStatus = <ThrowOnError extends boolean = false>(
   options: Options<ChangeGameStatusData, ThrowOnError>
 ) => {
@@ -1985,6 +2085,25 @@ export const getNotification = <ThrowOnError extends boolean = false>(
   });
 };
 
+export const getStoreVisits = <ThrowOnError extends boolean = false>(
+  options: Options<GetStoreVisitsData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).get<
+    GetStoreVisitsResponse,
+    unknown,
+    ThrowOnError
+  >({
+    security: [
+      {
+        scheme: 'bearer',
+        type: 'http'
+      }
+    ],
+    url: '/manager/stores/{storeId}/visits',
+    ...options
+  });
+};
+
 export const getStoreUsers = <ThrowOnError extends boolean = false>(
   options: Options<GetStoreUsersData, ThrowOnError>
 ) => {
@@ -2244,21 +2363,28 @@ export const getPresignedUploadUrl = <ThrowOnError extends boolean = false>(
   });
 };
 
-export const deleteVoucherTemplate = <ThrowOnError extends boolean = false>(
-  options: Options<DeleteVoucherTemplateData, ThrowOnError>
+export const getCompetitions = <ThrowOnError extends boolean = false>(
+  options: Options<GetCompetitionsData, ThrowOnError>
 ) => {
-  return (options.client ?? _heyApiClient).delete<
-    DeleteVoucherTemplateResponse,
+  return (options.client ?? _heyApiClient).get<
+    GetCompetitionsResponse,
     unknown,
     ThrowOnError
   >({
-    security: [
-      {
-        scheme: 'bearer',
-        type: 'http'
-      }
-    ],
-    url: '/manager/voucher-templates/{voucherTemplateId}',
+    url: '/competitions',
+    ...options
+  });
+};
+
+export const getCompetition = <ThrowOnError extends boolean = false>(
+  options: Options<GetCompetitionData, ThrowOnError>
+) => {
+  return (options.client ?? _heyApiClient).get<
+    GetCompetitionResponse,
+    unknown,
+    ThrowOnError
+  >({
+    url: '/competitions/{competitionId}',
     ...options
   });
 };
