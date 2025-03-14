@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Section, SectionTitle, SectionContent } from '@/components/section';
 import {
   Form,
@@ -28,13 +28,15 @@ import {
   CommandGroup,
   CommandItem
 } from '@/components/ui/command';
-import { ChevronsUpDown, Check } from 'lucide-react';
+import { ChevronsUpDown, Check, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { UserResponse } from '@/lib/api/types.gen';
 import { usePayments, PaymentMethod } from '@/hooks/use-payments';
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // 결제 수단 매핑
 const paymentMethodMapping: Record<
@@ -60,6 +62,9 @@ export default function PaymentAdditionSection({
   products,
   users
 }: PaymentAdditionSectionProps) {
+  // 결제 방식 선택 (일반 결제 또는 미수 결제)
+  const [paymentType, setPaymentType] = useState<'normal' | 'unpaid'>('normal');
+
   // 각 결제 수단별 금액 상태 관리
   const [paymentAmounts, setPaymentAmounts] = useState<Record<string, string>>({
     카드: '',
@@ -87,16 +92,55 @@ export default function PaymentAdditionSection({
 
   // 결제 수단별 금액 변경 핸들러
   const handleAmountChange = (method: string, value: string) => {
-    setPaymentAmounts((prev) => ({
-      ...prev,
-      [method]: value
-    }));
+    // 미수 결제 방식이면 다른 결제 수단은 무시
+    if (paymentType === 'unpaid' && method !== '미수') {
+      return;
+    }
+
+    // 일반 결제 방식이면 미수는 무시
+    if (paymentType === 'normal' && method === '미수') {
+      return;
+    }
+
+    // 값이 변경된 경우에만 상태 업데이트
+    if (paymentAmounts[method] !== value) {
+      setPaymentAmounts((prev) => ({
+        ...prev,
+        [method]: value
+      }));
+    }
   };
 
+  // 결제 방식 변경 시 금액 초기화
+  useEffect(() => {
+    if (paymentType === 'normal') {
+      setPaymentAmounts({
+        카드: paymentAmounts.카드,
+        현금: paymentAmounts.현금,
+        이용권: paymentAmounts.이용권,
+        미수: ''
+      });
+    } else {
+      setPaymentAmounts({
+        카드: '',
+        현금: '',
+        이용권: '',
+        미수: paymentAmounts.미수
+      });
+    }
+  }, [paymentType]);
+
   const onSubmit: SubmitHandler<PaymentFormData> = (data) => {
-    // 모든 결제 수단에서 금액이 입력된 것만 필터링
+    // 결제 방식에 따라 필터링할 결제 수단 결정
+    const methodsToFilter =
+      paymentType === 'normal' ? ['카드', '현금', '이용권'] : ['미수'];
+
+    // 선택된 결제 수단에서 금액이 입력된 것만 필터링
     const paymentMethods: PaymentMethod[] = Object.entries(paymentAmounts)
-      .filter(([_, amount]) => amount && parseInt(amount) > 0)
+      .filter(
+        ([method, amount]) =>
+          methodsToFilter.includes(method) && amount && parseInt(amount) > 0
+      )
       .map(([method, amount]) => ({
         type: paymentMethodMapping[method],
         amount: parseInt(amount)
@@ -132,6 +176,9 @@ export default function PaymentAdditionSection({
       이용권: '',
       미수: ''
     });
+
+    // 결제 방식 초기화
+    setPaymentType('normal');
   };
 
   return (
@@ -235,23 +282,60 @@ export default function PaymentAdditionSection({
             />
 
             <FormItem className='space-y-3'>
-              <FormLabel>결제 수단 및 금액</FormLabel>
-              <div className='space-y-4'>
-                {['카드', '현금', '이용권', '미수'].map((method) => (
-                  <div key={method} className='flex items-center gap-3'>
-                    <div className='w-24 font-medium'>{method}</div>
-                    <Input
-                      type='number'
-                      placeholder='금액'
-                      value={paymentAmounts[method]}
-                      onChange={(e) =>
-                        handleAmountChange(method, e.target.value)
-                      }
-                      className='flex-1'
-                    />
+              <FormLabel>결제 방식</FormLabel>
+              <Tabs
+                value={paymentType}
+                onValueChange={(value) =>
+                  setPaymentType(value as 'normal' | 'unpaid')
+                }
+                className='w-full'
+              >
+                <TabsList className='grid w-full grid-cols-2'>
+                  <TabsTrigger value='normal'>일반 결제</TabsTrigger>
+                  <TabsTrigger value='unpaid'>미수 결제</TabsTrigger>
+                </TabsList>
+                <TabsContent value='normal'>
+                  <div className='mt-4 space-y-4'>
+                    {['카드', '현금', '이용권'].map((method) => (
+                      <div key={method} className='flex items-center gap-3'>
+                        <div className='w-24 font-medium'>{method}</div>
+                        <Input
+                          type='number'
+                          placeholder='금액'
+                          value={paymentAmounts[method]}
+                          onChange={(e) =>
+                            handleAmountChange(method, e.target.value)
+                          }
+                          className='flex-1'
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </TabsContent>
+                <TabsContent value='unpaid'>
+                  <div className='mt-4 space-y-4'>
+                    <Alert className='mb-4'>
+                      <AlertCircle className='h-4 w-4' />
+                      <AlertTitle>미수 결제 안내</AlertTitle>
+                      <AlertDescription>
+                        미수 결제는 다른 결제 수단과 함께 사용할 수 없습니다.
+                      </AlertDescription>
+                    </Alert>
+                    <div className='flex items-center gap-3'>
+                      <div className='w-24 font-medium'>미수</div>
+                      <Input
+                        type='number'
+                        placeholder='금액'
+                        value={paymentAmounts['미수']}
+                        onChange={(e) =>
+                          handleAmountChange('미수', e.target.value)
+                        }
+                        className='flex-1'
+                      />
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
               <FormMessage />
             </FormItem>
 
