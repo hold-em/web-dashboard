@@ -11,9 +11,7 @@ export type StructureFormData = z.infer<typeof structureSchema>;
 
 export const gameFormSchema = z.object({
   game_type_id: z.number({ required_error: '게임 타입을 선택하세요.' }),
-  mode: z.enum(['TOURNAMENT', 'CASH_GAME'], {
-    required_error: '게임 모드를 선택하세요.'
-  }),
+  mode: z.string({ required_error: '게임 모드를 입력하세요.' }),
   store_id: z.number({ required_error: '매장을 선택하세요.' }),
   scheduled_at: z.coerce.date({ required_error: '시작 시간을 선택하세요.' }),
   status: z.enum(['WAITING', 'PLAYING', 'FINISHED']).default('WAITING'),

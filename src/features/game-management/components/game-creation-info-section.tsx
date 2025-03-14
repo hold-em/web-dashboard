@@ -112,7 +112,7 @@ export default function GameCreationInfoSection({
         }
       : {
           game_type_id: gameTypes.find((type) => type.name === '홀덤')?.id,
-          mode: 'TOURNAMENT',
+          mode: '',
           store_id: selectedStore?.id,
           scheduled_at: new Date(),
           status: 'WAITING',
@@ -280,19 +280,12 @@ export default function GameCreationInfoSection({
                 <FormItem>
                   <FormLabel>게임 모드</FormLabel>
                   <FormControl>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
+                    <Input
+                      id='mode'
+                      placeholder='게임 모드'
+                      {...field}
                       disabled={isReadOnly}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='게임 모드 선택' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='TOURNAMENT'>토너먼트</SelectItem>
-                        <SelectItem value='CASH_GAME'>캐시게임</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
